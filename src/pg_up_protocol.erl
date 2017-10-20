@@ -86,14 +86,16 @@ in_2_out_map() ->
 -spec get(M :: atom(), Model :: pg_model:pg_model(), Field :: atom())
       -> Value :: any().
 
-get(M, Model, up_index_key) ->
+get(M, Model, up_index_key) when is_atom(M), is_tuple(Model) ->
   {
     pg_model:get(M, Model, merId)
     , pg_model:get(M, Model, txnTime)
     , pg_model:get(M, Model, orderId)
   };
-get(M, Model, Field) ->
-  pg_model:get(M, Model, Field).
+get(M, Model, Field) when is_atom(Field) ->
+  pg_model:get(M, Model, Field);
+get(M, Model, Fields) when is_list(Fields) ->
+  [?MODULE:get(M, Model, Field) || Field <- Fields].
 
 %%------------------------------------------------------
 -spec verify(M, Protocol) -> PassOrNot when
@@ -120,8 +122,19 @@ verify(M, P) when is_atom(M), is_tuple(P) ->
   end.
 
 %%------------------------------------------------
-sign(M, P) ->
-  ok.
+-spec sign(M, P) -> Sig when
+  M :: atom(),
+  P :: pg_model:pg_model(),
+  Sig :: binary() | iolist().
+
+sign(M, P) when is_atom(M), is_tuple(P) ->
+  SignString = sign_string(M, P),
+  MerId = pg_model:get(M, P, merId),
+  lager:debug("SignString = ~ts", [SignString]),
+  Digest = digest_string(SignString),
+  Key = up_config:get_mer_prop(MerId, privateKey),
+  SignBin = do_sign(Digest, Key),
+  SignBin.
 
 %%------------------------------------------------
 validate_format(P) ->
@@ -180,3 +193,6 @@ digest_string_test() ->
 -spec signature_decode(binary()) -> binary().
 signature_decode(Signature) ->
   base64:decode(Signature).
+%%---------------------------------------------------
+do_sign(DigestBin, PK) when is_binary(DigestBin) ->
+  base64:encode(public_key:sign(DigestBin, 'sha', PK)).

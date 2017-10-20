@@ -40,6 +40,7 @@ my_test_() ->
       [
         fun verify_test_1/0
 %%        , fun sign_test_1/0
+        , fun get_test_1/0
       ]
     }
   }.
@@ -81,6 +82,14 @@ protocol() ->
 
 verify_test_1() ->
   ?assertEqual(ok, pg_up_protocol:verify(?M_P, protocol())),
+  ok.
+
+
+get_test_1() ->
+  P = protocol(),
+  ?assertEqual(pk(), pg_up_protocol:get(?M_P, P, up_index_key)),
+  ?assertEqual([<<"812626">>], pg_up_protocol:get(?M_P, P, [traceNo])),
+  ?assertEqual([pk(), <<"812626">>], pg_up_protocol:get(?M_P, P, [up_index_key, traceNo])),
   ok.
 
 
