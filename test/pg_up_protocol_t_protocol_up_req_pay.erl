@@ -41,32 +41,32 @@
   , backUrl = <<"0">>
   , accessType = <<"0">>
   , merId = <<"012345678901234">>
-%%  , subMerId = <<>>
-%%  , subMerName = <<>>
-%%  , subMerAbbr = <<>>
+  , subMerId = <<>>
+  , subMerName = <<>>
+  , subMerAbbr = <<>>
   , orderId = <<"0">>
   , txnTime = <<"19991212090909">>
-%%  , accType = <<"00">>
+  , accType = <<"00">>
   , accNo = <<>>
   , txnAmt = <<"0">>
   , currencyCode = <<"156">>
   , customerInfo = <<>>
-%%  , orderTimeOut = <<>>
-%%  , payTimeout = <<>>
+  , orderTimeOut = <<>>
+  , payTimeout = <<>>
   , termId = <<"01234567">>
   , reqReserved = <<"reqReserved">>
   , reserved = <<"{cardNumberLock=1}">>
-%%  , riskRateInfo = <<>>
-%%  , encryptCertId = <<>>
-%%  , frontFailUrl = <<>>
-%%  , instalTransInfo = <<>>
+  , riskRateInfo = <<>>
+  , encryptCertId = <<>>
+  , frontFailUrl = <<>>
+  , instalTransInfo = <<>>
   , defaultPayType = <<"0001">>
-%%  , issInsCode = <<>>
-%%  , supPayType = <<>>
-%%  , userMac = <<>>
-%%  , customerIp = <<>>
-%%  , cardTransData = <<>>
-%%  , orderDesc = <<>>
+  , issInsCode = <<>>
+  , supPayType = <<>>
+  , userMac = <<>>
+  , customerIp = <<>>
+  , cardTransData = <<>>
+  , orderDesc = <<>>
 
 }).
 -type ?TXN() :: #?TXN{}.
