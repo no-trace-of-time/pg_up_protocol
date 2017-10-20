@@ -80,6 +80,11 @@ in_2_out_map() ->
     , issuerIdentifyMode => <<"issuerIdentifyMode">>
 
     , exchangeRate => <<"exchangeRate">>
+    , frontUrl => <<"frontUrl">>
+    , backUrl => <<"backUrl">>
+    , customerInfo => <<"customerInfo">>
+    , termId => <<"termId">>
+    , defaultPayType => <<"defaultPayType">>
   }.
 
 %%------------------------------------------------------
