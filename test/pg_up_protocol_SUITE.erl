@@ -16,6 +16,8 @@
 -define(M_P, pg_up_protocol_t_protocol_up_resp_pay).
 -define(M_R, pg_up_protocol_t_repo_up_txn_log_pt).
 -define(M_P_REQ, pg_up_protocol_t_protocol_up_req_pay).
+-define(M_R_MCHANTS, pg_up_protocol_t_repo_mchants_pt).
+-define(M_P_MCHT_REQ, pg_mcht_protocol_req_collect).
 
 -compile(export_all).
 
@@ -24,12 +26,50 @@ setup() ->
 
 
   application:start(up_config),
+  application:start(pg_up_protocol),
   pg_test_utils:setup(mnesia),
 
-  pg_repo:drop(?M_R),
-  pg_repo:init(?M_R),
+  env_init(),
+
+  table_init(),
+  table_data_init(),
+
 
   ok.
+
+env_init() ->
+  Cfg1 = [
+    {mchants_repo_name, pg_up_protocol_t_repo_mchants_pt}
+  ],
+  [application:set_env(pg_up_protocol, Key, Val) || {Key, Val} <- Cfg1],
+  ok.
+
+do_table_init(Table) when is_atom(Table) ->
+  pg_repo:drop(Table),
+  pg_repo:init(Table),
+  ok.
+
+table_init() ->
+  [do_table_init(Table) || Table <- [?M_R, ?M_R_MCHANTS]].
+
+do_table_data_init(Table, VL) ->
+  R = pg_model:new(Table, VL),
+  pg_repo:save(R).
+
+table_data_init() ->
+  VLs =
+    [
+      [
+        {id, 1}
+        , {mcht_full_name, <<"test1">>}
+        , {payment_method, [gw_collect]}
+      ]
+    ],
+
+  [do_table_data_init(?M_R_MCHANTS, VL) || VL <- VLs].
+
+
+%%-------------------------------------------------------------
 
 my_test_() ->
   {
@@ -39,14 +79,23 @@ my_test_() ->
     {
       inorder,
       [
-        fun sign_test_1/0
+        fun repo_data_test_1/0
+        , fun sign_test_1/0
         , fun get_test_1/0
         , fun save_test_1/0
 %%      ,  fun verify_test_1/0
+        , fun public_key_test_1/0
+        , fun pg_up_protocol_req_collect:mer_id_test_1/0
+        , fun mcht_req_test_1/0
       ]
     }
   }.
 
+%%---------------------------------------------------
+repo_data_test_1() ->
+  [R] = pg_repo:read(?M_R_MCHANTS, 1),
+  ?assertEqual([gw_collect], pg_model:get(?M_R_MCHANTS, R, payment_method)),
+  ok.
 %%---------------------------------------------------
 qs() ->
   [
@@ -98,6 +147,23 @@ qs(req) ->
     , {<<"txnTime">>, <<"20171020143600">>}
     , {<<"txnType">>, <<"01">>}
     , {<<"version">>, <<"5.0.0">>}
+  ];
+
+qs(mcht_req) ->
+  [
+    {<<"tranAmt">>, <<"50">>}
+    , {<<"orderDesc">>, <<"测试交易"/utf8>>}
+    , {<<"merchId">>, <<"00001">>}
+    , {<<"tranId">>, <<"20171021095817473460847">>}
+    , {<<"bankCardNo">>, <<"9555500216246958">>}
+    , {<<"tranDate">>, <<"20171021">>}
+    , {<<"tranTime">>, <<"095817">>}
+    , {<<"signature">>, <<"16808B681094E884DC4EDF3882D59AFA4063D1D58867EAC6E52852F1018E2363A93F5790E2E737411716270A9A04B394294A1F91599C9603DA0EC96EE82B796CF483C94BC4D88C85EB7CE3B0EC9C142D7F512C95B428AF16F870C7458A07A270EE7773BAA44414462D7FAEBC430E59FCAB1AEAC587520D15933EDEC262741A9FE8D7F12DFEB8C87F568F3B9E074103E7731D8713275BA004B18C33F54C4ABB9815B63AF3A2585B4268354E52B19D094D33653771D77949E873A683AD9E9282EC75E8D1DF22F845FCCD9B50F2971072A82026A0D270E78B63C55ED065DE025F472E04B9F24D8F31AE0BE9133E42F029CF18C7128F13770B3F7BEC9DCBC329527B">>}
+    , {<<"certifType">>, <<"01">>}
+    , {<<"certifId">>, <<"320404197205161013">>}
+    , {<<"certifName">>, <<"徐峰"/utf8>>}
+    , {<<"phoneNo">>, <<"13916043073">>}
+    , {<<"trustBackUrl">>, <<"http://localhost:8888/pg/simu_mcht_back_succ_info">>}
   ].
 
 pk() ->
@@ -107,7 +173,9 @@ protocol() ->
   pg_protocol:out_2_in(?M_P, qs()).
 
 protocol(req) ->
-  pg_protocol:out_2_in(?M_P_REQ, qs(req)).
+  pg_protocol:out_2_in(?M_P_REQ, qs(req));
+protocol(mcht_req) ->
+  pg_protocol:out_2_in(?M_P_MCHT_REQ, qs(mcht_req)).
 
 
 verify_test_1() ->
@@ -147,6 +215,21 @@ sign_test_1() ->
     pg_up_protocol:sign_string(?M_P_REQ, P_REQ)),
   ?assertEqual(pg_model:get(?M_P_REQ, P_REQ, signature), pg_up_protocol:sign(?M_P_REQ, P_REQ)),
 
+  ok.
+
+
+%%---------------------------------------------------
+public_key_test_1() ->
+  Mer = '898319849000017',
+  Exp = {'RSAPublicKey', 25075441131720567085866729902218159377747062423371383524107374761812717563770268109948997780288273071334258860858052915905355276343651307038086547922894132189380520541045599388877318252919095727764841077854895985104729100540638767684783361856348670561720370893509135410850018931054760898624291436503576684397021129014869781575449697643844434389225954363141170194360004654461363558157997231378724765755264305476379664451164352960066619439868314736961337393825214127794543032860376797376971393045209385195525356416942360758376969793124724100310897024728103993596295956646042637599700366931961110130318723862096932387779,
+    65537},
+  ?assertEqual(Exp, up_config:get_mer_prop(Mer, publicKey)),
+  ok.
+%%---------------------------------------------------
+mcht_req_test_1() ->
+  PMchtReq = protocol(mcht_req),
+  PUpReq = pg_protocol:convert(pg_up_protocol_req_collect, PMchtReq),
+  ?assertEqual(<<>>, PUpReq),
   ok.
 
 

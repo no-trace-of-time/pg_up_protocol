@@ -1,5 +1,6 @@
 -module(pg_up_protocol).
 -include_lib("eunit/include/eunit.hrl").
+-include("include/type_up_protocol.hrl").
 %%-behavior(pg_model).
 %%-behavior(pg_protocol).
 
@@ -7,7 +8,7 @@
 -callback sign_fields() -> [atom()].
 -callback options() -> map().
 -callback validate() -> boolean().
--callback save(M :: atom(), Protocol :: pg_model:pg_model()) -> ok|fail.
+-callback to_list(Protocol :: pg_model:pg_model()) -> proplists:proplist().
 
 %% API exports
 %% callbacks of pg_protocol

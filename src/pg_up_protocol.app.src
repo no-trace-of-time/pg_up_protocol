@@ -13,7 +13,10 @@
         , pg_protocol
         , up_config
       ]},
-    {env, []},
+    {env, [
+      {up_repo_name, repo_up_txn_log_pt}
+      , {mchants_repo_name, repo_mchants_pt}
+    ]},
     {modules, []},
 
     {maintainers, []},
