@@ -42,6 +42,12 @@ env_init() ->
     {mchants_repo_name, pg_up_protocol_t_repo_mchants_pt}
   ],
   [application:set_env(pg_up_protocol, Key, Val) || {Key, Val} <- Cfg1],
+
+  Cfg2 = [
+    {debug_convert_config, true}
+  ],
+  [application:set_env(pg_protocol, Key, Val) || {Key, Val} <- Cfg2],
+
   ok.
 
 do_table_init(Table) when is_atom(Table) ->
@@ -86,7 +92,11 @@ my_test_() ->
 %%      ,  fun verify_test_1/0
         , fun public_key_test_1/0
         , fun pg_up_protocol_req_collect:mer_id_test_1/0
+        , fun pg_up_protocol_req_collect:cert_id_test_1/0
         , fun mcht_req_test_1/0
+
+        %% waiting ...
+%%        , fun pg_up_protocol_req_collect:bank_card_no_test_1/0
       ]
     }
   }.
@@ -155,14 +165,14 @@ qs(mcht_req) ->
     , {<<"orderDesc">>, <<"测试交易"/utf8>>}
     , {<<"merchId">>, <<"00001">>}
     , {<<"tranId">>, <<"20171021095817473460847">>}
-    , {<<"bankCardNo">>, <<"9555500216246958">>}
+    , {<<"bankCardNo">>, <<"6216261000000000018">>}
     , {<<"tranDate">>, <<"20171021">>}
     , {<<"tranTime">>, <<"095817">>}
     , {<<"signature">>, <<"16808B681094E884DC4EDF3882D59AFA4063D1D58867EAC6E52852F1018E2363A93F5790E2E737411716270A9A04B394294A1F91599C9603DA0EC96EE82B796CF483C94BC4D88C85EB7CE3B0EC9C142D7F512C95B428AF16F870C7458A07A270EE7773BAA44414462D7FAEBC430E59FCAB1AEAC587520D15933EDEC262741A9FE8D7F12DFEB8C87F568F3B9E074103E7731D8713275BA004B18C33F54C4ABB9815B63AF3A2585B4268354E52B19D094D33653771D77949E873A683AD9E9282EC75E8D1DF22F845FCCD9B50F2971072A82026A0D270E78B63C55ED065DE025F472E04B9F24D8F31AE0BE9133E42F029CF18C7128F13770B3F7BEC9DCBC329527B">>}
     , {<<"certifType">>, <<"01">>}
-    , {<<"certifId">>, <<"320404197205161013">>}
-    , {<<"certifName">>, <<"徐峰"/utf8>>}
-    , {<<"phoneNo">>, <<"13916043073">>}
+    , {<<"certifId">>, <<"341126197709218366">>}
+    , {<<"certifName">>, <<"全渠道"/utf8>>}
+    , {<<"phoneNo">>, <<"13552535506">>}
     , {<<"trustBackUrl">>, <<"http://localhost:8888/pg/simu_mcht_back_succ_info">>}
   ].
 
@@ -224,12 +234,30 @@ public_key_test_1() ->
   Exp = {'RSAPublicKey', 25075441131720567085866729902218159377747062423371383524107374761812717563770268109948997780288273071334258860858052915905355276343651307038086547922894132189380520541045599388877318252919095727764841077854895985104729100540638767684783361856348670561720370893509135410850018931054760898624291436503576684397021129014869781575449697643844434389225954363141170194360004654461363558157997231378724765755264305476379664451164352960066619439868314736961337393825214127794543032860376797376971393045209385195525356416942360758376969793124724100310897024728103993596295956646042637599700366931961110130318723862096932387779,
     65537},
   ?assertEqual(Exp, up_config:get_mer_prop(Mer, publicKey)),
+
+  PrivK = up_config:get_mer_prop(Mer, privateKey),
+  Msg = <<"aaa">>,
+  Sig = public_key:sign(Msg, 'sha', PrivK),
+  ?assertEqual(true, public_key:verify(Msg, 'sha', Sig, Exp)),
+
   ok.
 %%---------------------------------------------------
 mcht_req_test_1() ->
   PMchtReq = protocol(mcht_req),
   PUpReq = pg_protocol:convert(pg_up_protocol_req_collect, PMchtReq),
-  ?assertEqual(<<>>, PUpReq),
+  Exp = {pg_up_protocol_req_collect, <<"5.0.0">>, <<"UTF-8">>,
+    <<"70481187397">>, <<"0">>, <<"01">>, <<"11">>, <<"00">>,
+    <<"000501">>, <<"07">>, <<"0">>, <<"0">>,
+    <<"898319849000017">>, <<"0">>, <<"19991212090909">>,
+    <<"01">>,
+    <<"6216261000000000018">>,
+    50, <<"156">>,
+    <<"e2NlcnRmVHA9MDEmY2VydGlmSWQ9MzQxMTI2MTk3NzA5MjE4MzY2JmN1c3RvbWVyTm095YWo5rig6YGTJnBob25lTm89MTM1NTI1MzU1MDZ9">>,
+    <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
+    <<>>,
+    {<<"00001">>, <<"20171021">>,
+      <<"20171021095817473460847">>}},
+  ?assertEqual(Exp, PUpReq),
   ok.
 
 
