@@ -48,6 +48,13 @@ env_init() ->
   ],
   [application:set_env(pg_protocol, Key, Val) || {Key, Val} <- Cfg2],
 
+  Cfg3 = [
+    {up_repo_name, pg_up_protocol_t_repo_up_txn_log_pt}
+    , {debug, true}
+  ],
+
+  [application:set_env(pg_up_protocol, Key, Val) || {Key, Val} <- Cfg3],
+
   ok.
 
 do_table_init(Table) when is_atom(Table) ->
@@ -179,6 +186,9 @@ qs(mcht_req) ->
 pk() ->
   {<<"898319849000018">>, <<"20170206160227">>, <<"20170206160227544228896">>}.
 
+pk(mcht_req) ->
+  {<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>}.
+
 protocol() ->
   pg_protocol:out_2_in(?M_P, qs()).
 
@@ -243,8 +253,11 @@ public_key_test_1() ->
   ok.
 %%---------------------------------------------------
 mcht_req_test_1() ->
+  %% mcht_req, without sign
   PMchtReq = protocol(mcht_req),
-  PUpReq = pg_protocol:convert(pg_up_protocol_req_collect, PMchtReq),
+
+  %% convert to up
+  PUpReq = pg_convert:convert(pg_up_protocol_req_collect, PMchtReq),
   Exp = {pg_up_protocol_req_collect, <<"5.0.0">>, <<"UTF-8">>,
     <<"70481187397">>, <<"0">>, <<"01">>, <<"11">>, <<"00">>,
     <<"000501">>, <<"07">>, <<"0">>, <<"0">>,
@@ -256,8 +269,45 @@ mcht_req_test_1() ->
     <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
     <<>>,
     {<<"00001">>, <<"20171021">>,
-      <<"20171021095817473460847">>}},
+      <<"20171021095817473460847">>},
+    <<"01">>, <<"341126197709218366">>,
+    <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
+    <<"13552535506">>, <<"6216261000000000018">>
+  },
   ?assertEqual(Exp, PUpReq),
+
+  %% save up_req_collect
+  MRepo = pg_up_protocol:repo_up_module(),
+
+  ?assertEqual(
+    {up_txn_log, {<<"00001">>, <<"20171021">>,
+      <<"20171021095817473460847">>},
+      collect, <<"898319849000017">>,
+      <<"19991212090909">>, <<"0">>, 50,
+      <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
+      undefined, undefined,
+      {<<"898319849000017">>, <<"19991212090909">>,
+        <<"0">>},
+      undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined,
+      waiting, <<"6216261000000000018">>, undefined,
+      <<"01">>, undefined,
+      <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
+      <<"13552535506">>}
+    , pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req)),
+
+  ok = pg_up_protocol:save(pg_up_protocol_req_collect, PUpReq),
+
+  lager:error("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
+  io:format("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
+
+  ?assertEqual({<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>}, pk(mcht_req)),
+  [Repo] = pg_repo:read(MRepo, pk(mcht_req)),
+
+  ?assertEqual([pk(mcht_req), collect, waiting, <<"898319849000017">>],
+    pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
+
+  timer:sleep(1000),
   ok.
 
 

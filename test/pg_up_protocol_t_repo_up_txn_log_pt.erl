@@ -60,6 +60,12 @@
   %% mcht resp related
   , txn_status
   , up_accNo
+  , up_consumerInfo
+
+  , up_idType
+  , up_idNo
+  , up_idName
+  , up_mobile
 }).
 
 -type ?TBL() :: #?TBL{}.

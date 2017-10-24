@@ -27,7 +27,7 @@
 -export([
   sign_fields/0
   , options/0
-  , to_list/1
+%%  , to_list/1
 ]).
 %% callbacks of pg_protocol
 -export([
@@ -55,13 +55,19 @@
   , orderId = <<"0">> :: pg_up_protocol:orderId()
   , txnTime = <<"19991212090909">> :: pg_up_protocol:txnTime()
   , accType = <<"01">> :: pg_up_protocol:accType()
-  , accNo = <<>> :: pg_up_protocol:accNo()
+  %% the accNo is encrypted
+  , accNo = <<>> :: binary()
   , txnAmt = 0 :: pg_up_protocol:txnAmt()
   , currencyCode = <<"156">> :: pg_up_protocol:currencyCode()
   , customerInfo = <<>> :: pg_up_protocol:customerInfo()
   , reqReserved = <<>> :: pg_up_protocol:reqReserved()
   , reserved = <<>> :: pg_up_protocol:reserved()
   , mcht_index_key
+  , idType = <<>> :: pg_mcht_protocol:id_type()
+  , idNo = <<>> :: pg_mcht_protocol:id_no()
+  , idName = <<>> :: pg_mcht_protocol:id_name()
+  , mobile = <<>> :: pg_mcht_protocol:mobile()
+  , accNoRaw = <<>> :: pg_up_protocol:accNo()
 }).
 
 -type ?P() :: #?P{}.
@@ -90,6 +96,7 @@ sign_fields() ->
     , txnTime
     , txnType
     , version
+
   ].
 
 options() ->
@@ -98,13 +105,13 @@ options() ->
   }.
 
 
-to_list(Protocol) when is_tuple(Protocol) ->
-  VL = [
-    {txn_type, collect}
-    , {txn_status, waiting}
-    , {up_index_key, pg_up_protocol:get(?MODULE, Protocol, up_index_key)}
-  ] ++ pg_model:to(?MODULE, Protocol, proplists),
-  VL.
+%%to_list(Protocol) when is_tuple(Protocol) ->
+%%  VL = [
+%%    {txn_type, collect}
+%%    , {txn_status, waiting}
+%%    , {up_index_key, pg_up_protocol:get(?MODULE, Protocol, up_index_key)}
+%%  ] ++ pg_model:to(?MODULE, Protocol, proplists),
+%%  VL.
 
 
 convert_config() ->
@@ -112,19 +119,56 @@ convert_config() ->
     %% mcht_req_collect -> up_req_collect
     {default,
       [
-%%        {pg_mcht_protocol_req_collect,
-        {pg_mcht_protocol, pg_mcht_protocol_req_collect,
+        {to, pg_up_protocol_req_collect},
+        {from,
           [
-            {mcht_index_key, mcht_index_key}
+            {pg_mcht_protocol, pg_mcht_protocol_req_collect,
+              [
+                {mcht_index_key, mcht_index_key}
 %%            , {accNo, {fun bank_card_no/2, [mcht_id, bank_card_no]}}
-            , {accNo, bank_card_no}
-            , {customerInfo, {fun customer_info/4, [id_type, id_no, id_name, mobile]}}
-            , {merId, {fun mer_id/1, [mcht_id]}}
-            , {certId, {fun cert_id/1, [mcht_id]}}
-            , {txnAmt, txn_amt}
-            , {reqReserved, order_desc}
-            , {channelType, {fun channel_type/1, [mcht_id]}}
+                , {accNo, bank_card_no}
+                , {customerInfo, {fun customer_info/4, [id_type, id_no, id_name, mobile]}}
+                , {merId, {fun mer_id/1, [mcht_id]}}
+                , {certId, {fun cert_id/1, [mcht_id]}}
+                , {txnAmt, txn_amt}
+                , {reqReserved, order_desc}
+                , {channelType, {fun channel_type/1, [mcht_id]}}
+                , {idType, id_type}
+                , {idNo, id_no}
+                , {idName, id_name}
+                , {mobile, mobile}
+                , {accNoRaw, bank_card_no}
 
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {save_req,
+      [
+        {to, fun pg_up_protocol:repo_up_module/0},
+        {from,
+          [
+            {?MODULE,
+              [
+                {txn_type, {static, collect}}
+                , {txn_status, {static, waiting}}
+                , {mcht_index_key, pg_model, mcht_index_key}
+                , {up_merId, merId}
+                , {up_txnTime, txnTime}
+                , {up_orderId, orderId}
+                , {up_txnAmt, txnAmt}
+                , {up_reqReserved, reqReserved}
+%%                , {up_orderDesc, orderDesc}
+                , {up_index_key, pg_up_protocol, up_index_key}
+
+                , {up_accNo, accNoRaw}
+                , {up_idType, idType}
+                , {up_idName, idName}
+                , {up_mobile, mobile}
+              ]
+            }
           ]
         }
       ]

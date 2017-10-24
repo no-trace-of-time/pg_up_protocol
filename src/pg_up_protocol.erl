@@ -8,7 +8,7 @@
 -callback sign_fields() -> [atom()].
 -callback options() -> map().
 -callback validate() -> boolean().
--callback to_list(Protocol :: pg_model:pg_model()) -> proplists:proplist().
+%%-callback to_list(Protocol :: pg_model:pg_model()) -> proplists:proplist().
 
 %% API exports
 %% callbacks of pg_protocol
@@ -29,7 +29,11 @@
   , sign_string/2
   , sign/2
   , validate_format/1
+  , save/2
+  , repo_up_module/0
 ]).
+
+-define(APP, pg_up_protocol).
 %%====================================================================
 %% API functions
 %%====================================================================
@@ -146,6 +150,26 @@ sign(M, P) when is_atom(M), is_tuple(P) ->
 validate_format(P) ->
   ok.
 
+%%------------------------------------------------
+-spec save(M, P) -> Result when
+  M :: atom(),
+  P :: pg_model:pg_model(),
+  Result :: ok|fail.
+
+save(M, P) when is_atom(M), is_tuple(P) ->
+%%  VL = M:to_list(P),
+%%  MRepo = repo_up_module(),
+%%  Repo = pg_model:new(MRepo, VL),
+  Repo = pg_convert:convert(M, [P], save_req),
+  xfutils:cond_lager(?MODULE, debug, error, "Repo to be saved = ~p", [Repo]),
+  lager:error("Repo to be saveddd = ~p", [Repo]),
+  pg_repo:save(Repo).
+
+
+%%------------------------------------------------
+repo_up_module() ->
+  {ok, Module} = application:get_env(?APP, up_repo_name),
+  Module.
 %%====================================================================
 %% Internal functions
 %%====================================================================
