@@ -38,23 +38,30 @@ setup() ->
   ok.
 
 env_init() ->
-  Cfg1 = [
-    {mchants_repo_name, pg_up_protocol_t_repo_mchants_pt}
+  Cfgs = [
+    {pg_up_protocol,
+      [
+        {mchants_repo_name, pg_up_protocol_t_repo_mchants_pt}
+        , {up_repo_name, pg_up_protocol_t_repo_up_txn_log_pt}
+        , {debug, true}
+
+      ]
+    }
+    , {pg_protocol,
+      [
+        {debug_convert_config, true}
+      ]
+    }
+    , {pg_convert,
+      [
+        {debug, false}
+        , {field_existance_validate, true}
+
+      ]
+    }
   ],
-  [application:set_env(pg_up_protocol, Key, Val) || {Key, Val} <- Cfg1],
 
-  Cfg2 = [
-    {debug_convert_config, true}
-  ],
-  [application:set_env(pg_protocol, Key, Val) || {Key, Val} <- Cfg2],
-
-  Cfg3 = [
-    {up_repo_name, pg_up_protocol_t_repo_up_txn_log_pt}
-    , {debug, true}
-  ],
-
-  [application:set_env(pg_up_protocol, Key, Val) || {Key, Val} <- Cfg3],
-
+  pg_test_utils:env_init(Cfgs),
   ok.
 
 do_table_init(Table) when is_atom(Table) ->
