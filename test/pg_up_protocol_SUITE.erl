@@ -109,8 +109,6 @@ my_test_() ->
         , fun pg_up_protocol_req_collect:cert_id_test_1/0
         , fun mcht_req_test_1/0
 
-        %% waiting ...
-%%        , fun pg_up_protocol_req_collect:bank_card_no_test_1/0
       ]
     }
   }.
@@ -248,7 +246,8 @@ sign_test_1() ->
 %%---------------------------------------------------
 public_key_test_1() ->
   Mer = '898319849000017',
-  Exp = {'RSAPublicKey', 25075441131720567085866729902218159377747062423371383524107374761812717563770268109948997780288273071334258860858052915905355276343651307038086547922894132189380520541045599388877318252919095727764841077854895985104729100540638767684783361856348670561720370893509135410850018931054760898624291436503576684397021129014869781575449697643844434389225954363141170194360004654461363558157997231378724765755264305476379664451164352960066619439868314736961337393825214127794543032860376797376971393045209385195525356416942360758376969793124724100310897024728103993596295956646042637599700366931961110130318723862096932387779,
+  Exp = {'RSAPublicKey',
+    27458097339787492174296826163544949818677781540074993874397459235197367059712882266695236016118958171713550095848280053955490059881751464276841257182491862597598099171365297101417111587696114402806744161243363735267289681167544410706736329605989523324384573658954813224000947195763541373190301782660711382464183525786252700843191085722972372856902043836810872992934524389482477215524672438111072694003952227234062577937094056650876571959033280122979504280902703052628866598163772514185148482193191003949335589824361712747261882707541024948015496439483821044120446095872755086843088053006332772223145255595389325396963,
     65537},
   ?assertEqual(Exp, up_config:get_mer_prop(Mer, publicKey)),
 
@@ -270,7 +269,7 @@ mcht_req_test_1() ->
     <<"000501">>, <<"07">>, <<"0">>, <<"0">>,
     <<"898319849000017">>, <<"0">>, <<"19991212090909">>,
     <<"01">>,
-    <<"6216261000000000018">>,
+    <<"">>,
     50, <<"156">>,
     <<"e2NlcnRmVHA9MDEmY2VydGlmSWQ9MzQxMTI2MTk3NzA5MjE4MzY2JmN1c3RvbWVyTm095YWo5rig6YGTJnBob25lTm89MTM1NTI1MzU1MDZ9">>,
     <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
@@ -281,40 +280,40 @@ mcht_req_test_1() ->
     <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
     <<"13552535506">>, <<"6216261000000000018">>
   },
-  ?assertEqual(Exp, PUpReq),
+  ?assertEqual(Exp, pg_model:set(pg_up_protocol_req_collect, PUpReq, accNo, <<"">>)),
 
-  %% save up_req_collect
-  MRepo = pg_up_protocol:repo_up_module(),
+    %% save up_req_collect
+    MRepo = pg_up_protocol:repo_up_module(),
 
-  ?assertEqual(
-    {up_txn_log, {<<"00001">>, <<"20171021">>,
-      <<"20171021095817473460847">>},
-      collect, <<"898319849000017">>,
-      <<"19991212090909">>, <<"0">>, 50,
-      <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
-      undefined, undefined,
-      {<<"898319849000017">>, <<"19991212090909">>,
-        <<"0">>},
-      undefined, undefined, undefined, undefined,
-      undefined, undefined, undefined, undefined,
-      waiting, <<"6216261000000000018">>, undefined,
-      <<"01">>, undefined,
-      <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
-      <<"13552535506">>}
-    , pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req)),
+    ?assertEqual(
+      {up_txn_log, {<<"00001">>, <<"20171021">>,
+        <<"20171021095817473460847">>},
+        collect, <<"898319849000017">>,
+        <<"19991212090909">>, <<"0">>, 50,
+        <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
+        undefined, undefined,
+        {<<"898319849000017">>, <<"19991212090909">>,
+          <<"0">>},
+        undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, undefined,
+        waiting, <<"6216261000000000018">>, undefined,
+        <<"01">>, undefined,
+        <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
+        <<"13552535506">>}
+      , pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req)),
 
-  ok = pg_up_protocol:save(pg_up_protocol_req_collect, PUpReq),
+    ok = pg_up_protocol:save(pg_up_protocol_req_collect, PUpReq),
 
-  lager:error("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
-  io:format("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
+    lager:error("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
+    io:format("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
 
-  ?assertEqual({<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>}, pk(mcht_req)),
-  [Repo] = pg_repo:read(MRepo, pk(mcht_req)),
+    ?assertEqual({<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>}, pk(mcht_req)),
+    [Repo] = pg_repo:read(MRepo, pk(mcht_req)),
 
-  ?assertEqual([pk(mcht_req), collect, waiting, <<"898319849000017">>],
-    pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
+    ?assertEqual([pk(mcht_req), collect, waiting, <<"898319849000017">>],
+      pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
 
-  timer:sleep(1000),
-  ok.
+    timer:sleep(1000),
+    ok.
 
 

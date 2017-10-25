@@ -125,8 +125,8 @@ convert_config() ->
             {pg_mcht_protocol, pg_mcht_protocol_req_collect,
               [
                 {mcht_index_key, mcht_index_key}
-%%            , {accNo, {fun bank_card_no/2, [mcht_id, bank_card_no]}}
-                , {accNo, bank_card_no}
+                , {accNo, {fun bank_card_no/1, [bank_card_no]}}
+%%                , {accNo, bank_card_no}
                 , {customerInfo, {fun customer_info/4, [id_type, id_no, id_name, mobile]}}
                 , {merId, {fun mer_id/1, [mcht_id]}}
                 , {certId, {fun cert_id/1, [mcht_id]}}
@@ -234,15 +234,17 @@ public_key(MchtId) ->
   PublicKey = up_config:get_mer_prop(MerId, publicKey),
   PublicKey.
 
-bank_card_no(MchtId, BankCardNo) when is_binary(MchtId), is_binary(BankCardNo) ->
+
+bank_card_no(BankCardNo) when is_binary(BankCardNo) ->
   %% use mer public key to enc BankCardNo, then base64:encode
-  PublicKey = public_key(MchtId),
+  PublicKey = up_config:get_config(sens_public_key),
   EncBin = public_key:encrypt_public(BankCardNo, PublicKey),
   base64:encode(EncBin).
 
+%% every time , encrypt_public/2 result is not same
 bank_card_no_test_1() ->
   ExpPK = {'RSAPublicKey', 25075441131720567085866729902218159377747062423371383524107374761812717563770268109948997780288273071334258860858052915905355276343651307038086547922894132189380520541045599388877318252919095727764841077854895985104729100540638767684783361856348670561720370893509135410850018931054760898624291436503576684397021129014869781575449697643844434389225954363141170194360004654461363558157997231378724765755264305476379664451164352960066619439868314736961337393825214127794543032860376797376971393045209385195525356416942360758376969793124724100310897024728103993596295956646042637599700366931961110130318723862096932387779,
     65537},
   ?assertEqual(ExpPK, public_key(<<"1">>)),
-  ?assertEqual(<<>>, bank_card_no(<<"1">>, <<"9555500216246958">>)),
+  ?assertEqual(<<>>, bank_card_no(<<"9555500216246958">>)),
   ok.
