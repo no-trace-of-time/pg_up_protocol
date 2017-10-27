@@ -139,6 +139,10 @@ convert_config() ->
                 , {mobile, mobile}
                 , {accNoRaw, bank_card_no}
 
+                , {backUrl, {fun get_up_back_url/0, []}}
+                , {txnTime, {fun now_txn/0, []}}
+                , {orderId, {fun xfutils:get_new_order_id/0, []}}
+
               ]
             }
           ]
@@ -248,3 +252,9 @@ bank_card_no_test_1() ->
   ?assertEqual(ExpPK, public_key(<<"1">>)),
   ?assertEqual(<<>>, bank_card_no(<<"9555500216246958">>)),
   ok.
+
+now_txn() ->
+  datetime_x_fin:now(txn).
+
+get_up_back_url() ->
+  up_config:get_config(pg_back_url).

@@ -31,6 +31,7 @@
   , validate_format/1
   , save/2
   , repo_up_module/0
+  , post_string/2
 ]).
 
 -define(APP, pg_up_protocol).
@@ -226,3 +227,10 @@ signature_decode(Signature) ->
 %%---------------------------------------------------
 do_sign(DigestBin, PK) when is_binary(DigestBin) ->
   base64:encode(public_key:sign(DigestBin, 'sha', PK)).
+%%---------------------------------------------------
+post_string(M, P) when is_atom(M), is_tuple(P) ->
+  PostFields = [signature | M:sign_fields()],
+  In2OutMap = in_2_out_map(),
+%%  pg_model:to(M, P, {poststring, PostFields, In2OutMap}).
+  pg_model:to(M, P, {poststring, PostFields}).
+

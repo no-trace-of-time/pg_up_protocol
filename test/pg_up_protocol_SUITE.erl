@@ -107,8 +107,9 @@ my_test_() ->
         , fun public_key_test_1/0
         , fun pg_up_protocol_req_collect:mer_id_test_1/0
         , fun pg_up_protocol_req_collect:cert_id_test_1/0
-        , fun mcht_req_test_1/0
+%%        , fun mcht_req_test_1/0
 
+        , fun send_up_collect_test_1/0
       ]
     }
   }.
@@ -248,7 +249,7 @@ public_key_test_1() ->
   Mer = '898319849000017',
   Exp = {'RSAPublicKey',
     101644520220236836870917291536834065072872966604033013050422535039833964616694221014682054969392846488845086643712654544677767240466434922854009891504187107105095857503703221676714225636568370763938202227250226014466527721386598160653206013248708530683488139562569605793332215524446701571068918660401165390171,
-      65537},
+    65537},
   ?assertEqual(Exp, up_config:get_mer_prop(Mer, publicKey)),
 
   PrivK = up_config:get_mer_prop(Mer, privateKey),
@@ -282,38 +283,51 @@ mcht_req_test_1() ->
   },
   ?assertEqual(Exp, pg_model:set(pg_up_protocol_req_collect, PUpReq, accNo, <<"">>)),
 
-    %% save up_req_collect
-    MRepo = pg_up_protocol:repo_up_module(),
+  %% save up_req_collect
+  MRepo = pg_up_protocol:repo_up_module(),
 
-    ?assertEqual(
-      {up_txn_log, {<<"00001">>, <<"20171021">>,
-        <<"20171021095817473460847">>},
-        collect, <<"898319849000017">>,
-        <<"19991212090909">>, <<"0">>, 50,
-        <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
-        undefined, undefined,
-        {<<"898319849000017">>, <<"19991212090909">>,
-          <<"0">>},
-        undefined, undefined, undefined, undefined,
-        undefined, undefined, undefined, undefined,
-        waiting, <<"6216261000000000018">>, undefined,
-        <<"01">>, undefined,
-        <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
-        <<"13552535506">>}
-      , pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req)),
+  ?assertEqual(
+    {up_txn_log, {<<"00001">>, <<"20171021">>,
+      <<"20171021095817473460847">>},
+      collect, <<"898319849000017">>,
+      <<"19991212090909">>, <<"0">>, 50,
+      <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230, 152, 147>>,
+      undefined, undefined,
+      {<<"898319849000017">>, <<"19991212090909">>,
+        <<"0">>},
+      undefined, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined,
+      waiting, <<"6216261000000000018">>, undefined,
+      <<"01">>, undefined,
+      <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
+      <<"13552535506">>}
+    , pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req)),
 
-    ok = pg_up_protocol:save(pg_up_protocol_req_collect, PUpReq),
+  ok = pg_up_protocol:save(pg_up_protocol_req_collect, PUpReq),
 
-    lager:error("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
-    io:format("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
+  lager:error("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
+  io:format("Key = ~p", [mnesia:dirty_first(up_txn_log)]),
 
-    ?assertEqual({<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>}, pk(mcht_req)),
-    [Repo] = pg_repo:read(MRepo, pk(mcht_req)),
+  ?assertEqual({<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>}, pk(mcht_req)),
+  [Repo] = pg_repo:read(MRepo, pk(mcht_req)),
 
-    ?assertEqual([pk(mcht_req), collect, waiting, <<"898319849000017">>],
-      pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
+  ?assertEqual([pk(mcht_req), collect, waiting, <<"898319849000017">>],
+    pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
 
-    timer:sleep(1000),
-    ok.
+%%    timer:sleep(1000),
+  ok.
+
+send_up_collect_test_1() ->
+  PMchtReq = protocol(mcht_req),
+  PUpReq = pg_convert:convert(pg_up_protocol_req_collect, PMchtReq),
+  Sig = pg_up_protocol:sign(pg_up_protocol_req_collect, PUpReq),
+  PUpReqWithSig = pg_model:set(pg_up_protocol_req_collect, PUpReq, signature, Sig),
+  ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
+  ?debugFmt("PostSTring = ~ts",
+    [pg_up_protocol:post_string(
+      pg_up_protocol_req_collect,
+      PUpReqWithSig)]),
+
+  ok.
 
 
