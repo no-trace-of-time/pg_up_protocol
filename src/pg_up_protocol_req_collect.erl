@@ -46,7 +46,7 @@
   , signature = <<"0">> :: pg_up_protocol:signature()
   , signMethod = <<"01">> :: pg_up_protocol:signMethod()
   , txnType = <<"11">> :: pg_up_protocol:txnType()
-  , txnSubType = <<"00">> :: pg_up_protocol:txnSubType()
+  , txnSubType = <<"02">> :: pg_up_protocol:txnSubType()
   , bizType = <<"000501">> :: pg_up_protocol:bizType()
   , channelType = <<"07">> :: pg_up_protocol:channelType()
   , backUrl = <<"0">> :: pg_up_protocol:url()
@@ -68,6 +68,7 @@
   , idName = <<>> :: pg_mcht_protocol:id_name()
   , mobile = <<>> :: pg_mcht_protocol:mobile()
   , accNoRaw = <<>> :: pg_up_protocol:accNo()
+  , encryptCertId = <<>> :: pg_up_protocol:encryptCertId()
 }).
 
 -type ?P() :: #?P{}.
@@ -78,6 +79,7 @@
 sign_fields() ->
   [
     accNo
+    , accType
     , accessType
     , backUrl
     , bizType
@@ -86,6 +88,7 @@ sign_fields() ->
     , currencyCode
     , customerInfo
     , encoding
+    , encryptCertId
     , merId
     , orderId
     , reqReserved
@@ -142,6 +145,7 @@ convert_config() ->
                 , {backUrl, {fun get_up_back_url/0, []}}
                 , {txnTime, {fun now_txn/0, []}}
                 , {orderId, {fun xfutils:get_new_order_id/0, []}}
+                , {encryptCertId, {fun get_up_encrypt_cert_id/0, []}}
 
               ]
             }
@@ -183,27 +187,31 @@ convert_config() ->
 -define(APP, pg_up_protocol).
 customer_info_raw(IdType, IdNo, IdName, Mobile)
   when is_binary(IdType), is_binary(IdNo), is_binary(IdName), is_binary(Mobile) ->
+  PhoneInfo = <<"phoneNo=", Mobile/binary>>,
+  ?debugFmt("PhoneInfo=[~ts]", [PhoneInfo]),
+  EncryptedInfo = encrypt_sens_info(PhoneInfo),
   <<
     "{"
-    , "certfTp=", IdType/binary, "&"
     , "certifId=", IdNo/binary, "&"
+    , "certifTp=", IdType/binary, "&"
     , "customerNm=", IdName/binary, "&"
-    , "phoneNo=", Mobile/binary
+    , "encryptedInfo=", EncryptedInfo/binary
     , "}"
   >>.
 customer_info(IdType, IdNo, IdName, Mobile)
   when is_binary(IdType), is_binary(IdNo), is_binary(IdName), is_binary(Mobile) ->
   Info = customer_info_raw(IdType, IdNo, IdName, Mobile),
+  ?debugFmt("customer_info_raw= ~ts", [Info]),
   base64:encode(Info).
 
-customer_info_test() ->
-  Exp = <<"{certfTp=01&certifId=341126197709218366&customerNm=全渠道&phoneNo=13552535506}"/utf8>>,
+customer_info_test_1() ->
+  Exp = <<"{certifId=341126197709218366&certfTp=01&customerNm=全渠道&encryptedInfo="/utf8>>,
   Info = customer_info_raw(<<"01">>, <<"341126197709218366">>, <<"全渠道"/utf8>>, <<"13552535506">>),
-  ?assertEqual(Exp, Info),
+%%  ?assertEqual(<<>>, Info),
 
   InfoEncoded = customer_info(<<"01">>, <<"341126197709218366">>, <<"全渠道"/utf8>>, <<"13552535506">>),
-  ?assertEqual(<<"e2NlcnRmVHA9MDEmY2VydGlmSWQ9MzQxMTI2MTk3NzA5MjE4MzY2JmN1c3RvbWVyTm095YWo5rig6YGTJnBob25lTm89MTM1NTI1MzU1MDZ9">>,
-    InfoEncoded),
+%%  ?assertEqual(<<"e2NlcnRpZklkPTM0MTEyNjE5NzcwOTIxODM2NiZjZXJ0ZlRwPTAxJmN1c3RvbWVyTm095YWo5rig6YGTJnBob25lTm89MTM1NTI1MzU1MDZ9">>,
+%%    InfoEncoded),
   ok.
 
 up_mer_id(MchtId) ->
@@ -218,7 +226,7 @@ mer_id(MchtId) ->
   MerIdBin.
 
 mer_id_test_1() ->
-  ?assertEqual(<<"898319849000017">>, mer_id(1)),
+  ?assertEqual(<<"777290058110097">>, mer_id(1)),
   ok.
 
 cert_id(MchtId) ->
@@ -226,7 +234,7 @@ cert_id(MchtId) ->
   up_config:get_mer_prop(MerId, certId).
 
 cert_id_test_1() ->
-  ?assertEqual(<<"70481187397">>, cert_id(1)),
+  ?assertEqual(<<"68759663125">>, cert_id(1)),
   ok.
 
 channel_type(MchtId) ->
@@ -239,11 +247,14 @@ public_key(MchtId) ->
   PublicKey.
 
 
-bank_card_no(BankCardNo) when is_binary(BankCardNo) ->
+encrypt_sens_info(Raw) when is_binary(Raw) ->
   %% use mer public key to enc BankCardNo, then base64:encode
   PublicKey = up_config:get_config(sens_public_key),
-  EncBin = public_key:encrypt_public(BankCardNo, PublicKey),
+  EncBin = public_key:encrypt_public(Raw, PublicKey),
   base64:encode(EncBin).
+
+bank_card_no(BankCardNo) when is_binary(BankCardNo) ->
+  encrypt_sens_info(BankCardNo).
 
 %% every time , encrypt_public/2 result is not same
 bank_card_no_test_1() ->
@@ -258,3 +269,6 @@ now_txn() ->
 
 get_up_back_url() ->
   up_config:get_config(pg_back_url).
+
+get_up_encrypt_cert_id() ->
+  up_config:get_config(encrypt_cert_id).

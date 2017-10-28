@@ -37,7 +37,7 @@
 -type reqReserved() :: bytes().
 -type reserved() :: any().
 -type riskRateInfo() :: any().
--type encryptCertId() :: any().
+-type encryptCertId() :: binary().
 -type frontFailUrl() :: any().
 -type instalTransInfo() :: any().
 -type defaultPayType() :: byte4().    % N4

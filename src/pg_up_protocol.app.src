@@ -4,7 +4,10 @@
     {registered, []},
     {applications,
       [kernel,
-        stdlib
+        stdlib,
+        inets,
+        sasl,
+        ssl
       ]},
     {included_applications,
       [
