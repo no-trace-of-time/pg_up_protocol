@@ -42,7 +42,7 @@
 -record(?P, {
   version = <<"5.0.0">> :: pg_up_protocol:version()
   , encoding = <<"UTF-8">> :: pg_up_protocol:encoding()
-  , certId = <<"9">> :: pg_up_protocol:certId()
+  , certId = <<>> :: pg_up_protocol:certId()
   , signature = <<"0">> :: pg_up_protocol:signature()
   , signMethod = <<"01">> :: pg_up_protocol:signMethod()
   , txnType = <<"11">> :: pg_up_protocol:txnType()
@@ -188,7 +188,7 @@ convert_config() ->
 customer_info_raw(IdType, IdNo, IdName, Mobile)
   when is_binary(IdType), is_binary(IdNo), is_binary(IdName), is_binary(Mobile) ->
   PhoneInfo = <<"phoneNo=", Mobile/binary>>,
-  ?debugFmt("PhoneInfo=[~ts]", [PhoneInfo]),
+%%  ?debugFmt("PhoneInfo=[~ts]", [PhoneInfo]),
   EncryptedInfo = encrypt_sens_info(PhoneInfo),
   <<
     "{"
@@ -201,7 +201,7 @@ customer_info_raw(IdType, IdNo, IdName, Mobile)
 customer_info(IdType, IdNo, IdName, Mobile)
   when is_binary(IdType), is_binary(IdNo), is_binary(IdName), is_binary(Mobile) ->
   Info = customer_info_raw(IdType, IdNo, IdName, Mobile),
-  ?debugFmt("customer_info_raw= ~ts", [Info]),
+%%  ?debugFmt("customer_info_raw= ~ts", [Info]),
   base64:encode(Info).
 
 customer_info_test_1() ->

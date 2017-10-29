@@ -31,7 +31,8 @@
   , validate_format/1
   , save/2
   , repo_up_module/0
-  , post_string/2
+  , out_2_in/2
+  , in_2_out/3
 ]).
 
 -define(APP, pg_up_protocol).
@@ -49,6 +50,63 @@ pr_formatter(_) ->
 
 
 %%------------------------------------------------------
+build_in_2_out_map() ->
+  Fields = [
+    version
+    , encoding
+    , certId
+    , signature
+    , signMethod
+    , txnType
+    , txnSubType
+    , bizType
+    , channelType
+    , accessType
+    , merId
+    , txnTime
+    , orderId
+    , queryId
+
+    , {txnAmt, integer}
+    , currencyCode
+    , reqReserved
+    , respCode
+    , respMsg
+    , {settleAmt, integer}
+    , settleCurrencyCode
+    , settleDate
+    , traceNo
+    , traceTime
+    , txnSubType
+    , txnTime
+    , reserved
+    , accNo
+
+    , origRespCode
+    , origRespMsg
+    , issuerIdentifyMode
+
+    , exchangeRate
+    , frontUrl
+    , backUrl
+    , customerInfo
+    , termId
+    , defaultPayType
+
+    , accType
+
+  ],
+
+  F = fun
+        ({Key, Type}) ->
+          {Key, {atom_to_binary(Key, utf8), Type}};
+        (Key) ->
+          {Key, atom_to_binary(Key, utf8)}
+      end,
+  VL = [F(Field) || Field <- Fields],
+  maps:from_list(VL).
+
+
 in_2_out_map() ->
   #{
     version => <<"version">>
@@ -91,6 +149,9 @@ in_2_out_map() ->
     , customerInfo => <<"customerInfo">>
     , termId => <<"termId">>
     , defaultPayType => <<"defaultPayType">>
+
+    , accType => <<"accType">>
+    , encryptCertId => <<"encryptCertId">>
   }.
 
 %%------------------------------------------------------
@@ -141,10 +202,10 @@ verify(M, P) when is_atom(M), is_tuple(P) ->
 sign(M, P) when is_atom(M), is_tuple(P) ->
   SignString = sign_string(M, P),
   MerId = pg_model:get(M, P, merId),
-  lager:debug("SignString = ~ts", [SignString]),
   Digest = digest_string(SignString),
   Key = up_config:get_mer_prop(MerId, privateKey),
   SignBin = do_sign(Digest, Key),
+  lager:debug("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
   SignBin.
 
 %%------------------------------------------------
@@ -227,10 +288,15 @@ signature_decode(Signature) ->
 %%---------------------------------------------------
 do_sign(DigestBin, PK) when is_binary(DigestBin) ->
   base64:encode(public_key:sign(DigestBin, 'sha', PK)).
+%%  base64:encode(public_key:sign(DigestBin, 'sha256', PK)).
 %%---------------------------------------------------
-post_string(M, P) when is_atom(M), is_tuple(P) ->
-  PostFields = [signature | M:sign_fields()],
-  In2OutMap = in_2_out_map(),
-%%  pg_model:to(M, P, {poststring, PostFields, In2OutMap}).
-  pg_model:to(M, P, {poststring, PostFields}).
-
+out_2_in(M, PV) when is_atom(M), is_list(PV) ->
+  pg_protocol:out_2_in(M, PV).
+%%---------------------------------------------------
+out_fields(M) when is_atom(M) ->
+  [signature | M:sign_fields()].
+%%---------------------------------------------------
+in_2_out(M, Protocol, proplists) when is_atom(M), is_tuple(Protocol) ->
+  pg_model:to(M, Protocol, {proplists, out_fields(M), in_2_out_map()});
+in_2_out(M, Protocol, post) when is_atom(M), is_tuple(Protocol) ->
+  pg_model:to(M, Protocol, {poststring, out_fields(M), in_2_out_map()}).

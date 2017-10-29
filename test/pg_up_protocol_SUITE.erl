@@ -327,7 +327,8 @@ send_up_collect_test_1() ->
   PUpReqWithSig = pg_model:set(pg_up_protocol_req_collect, PUpReq, signature, Sig),
   ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
 
-  PostBody = pg_up_protocol:post_string(pg_up_protocol_req_collect, PUpReqWithSig),
+%%  PostBody = pg_up_protocol:post_string(pg_up_protocol_req_collect, PUpReqWithSig),
+  PostBody = pg_up_protocol:in_2_out(pg_up_protocol_req_collect, PUpReqWithSig, post),
   Url = up_config:get_config(up_back_url),
 
   ?debugFmt("PostString = ~ts,Url = ~p", [PostBody, Url]),
