@@ -101,6 +101,7 @@ my_test_() ->
       inorder,
       [
         fun repo_data_test_1/0
+        , fun pg_up_protocol:sign_aaa_test_1/0
         , fun sign_test_1/0
         , fun get_test_1/0
         , fun save_test_1/0
@@ -340,5 +341,7 @@ send_up_collect_test_1() ->
 
 
   ok.
+
+
 
 

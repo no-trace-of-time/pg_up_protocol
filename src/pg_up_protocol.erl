@@ -35,6 +35,10 @@
   , in_2_out/3
 ]).
 
+
+-export([
+  sign_aaa_test_1/0
+]).
 -define(APP, pg_up_protocol).
 %%====================================================================
 %% API functions
@@ -206,6 +210,7 @@ sign(M, P) when is_atom(M), is_tuple(P) ->
   Key = up_config:get_mer_prop(MerId, privateKey),
   SignBin = do_sign(Digest, Key),
   lager:debug("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
+  ?debugFmt("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
   SignBin.
 
 %%------------------------------------------------
@@ -300,3 +305,13 @@ in_2_out(M, Protocol, proplists) when is_atom(M), is_tuple(Protocol) ->
   pg_model:to(M, Protocol, {proplists, out_fields(M), in_2_out_map()});
 in_2_out(M, Protocol, post) when is_atom(M), is_tuple(Protocol) ->
   pg_model:to(M, Protocol, {poststring, out_fields(M), in_2_out_map()}).
+
+%%-----------------------------------------------------
+sign_aaa_test_1() ->
+  SignString = <<"aaa">>,
+  Digest = digest_string(SignString),
+  Key = up_config:get_mer_prop('777290058110097', privateKey),
+  SignBin = do_sign(Digest, Key),
+  ?assertEqual(<<"xdzlekQXkOvFHxw+O5av+M5ldunyEEswIj/LHztkqaTbCDk+4b7nzSRSYRxfpOXv+boye9F7mqUXEDQarEct0TeauUxPtBkQidnZCbh0nZRvkT4B/OrX8iWpINEabGkh200nd16oere7Zw/u0AvMvroOcagGFkHzzD8NPvAk0gPhNNhTqD9sh6VRkWgjxcoQdpJsqgP9H8GG4TJHHkQ9Yf8coPdyZEbRHfBhbstyWxZ1D/9hPNtoER09AVikzqj/zF6AKGFbaPPBfLD0ym/ZVwyum1cIJ87aHtWsz1F8NkKOvBkc0IZCZ+cbpwlkNOBJxtA46IYZHitern54ehVCWw==">>
+    , SignBin),
+  ok.
