@@ -28,6 +28,7 @@
   , verify/2
   , sign_string/2
   , sign/2
+  , sign256/2
   , validate_format/1
   , save/2
   , repo_up_module/0
@@ -213,6 +214,15 @@ sign(M, P) when is_atom(M), is_tuple(P) ->
   ?debugFmt("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
   SignBin.
 
+sign256(M, P) when is_atom(M), is_tuple(P) ->
+  SignString = sign_string(M, P),
+  MerId = pg_model:get(M, P, merId),
+  Digest = digest256_string(SignString),
+  Key = up_config:get_mer_prop(MerId, privateKey),
+  SignBin = do_sign256(Digest, Key),
+  lager:debug("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
+  ?debugFmt("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
+  SignBin.
 %%------------------------------------------------
 validate_format(P) ->
   ok.
@@ -274,6 +284,13 @@ digest_string_upper(Bin) ->
   DigestHex = xfutils:bin_to_hex(DigestBin),
   % convert to lowercase
   DigestHex.
+
+-spec digest256_string_upper(binary()) -> binary().
+digest256_string_upper(Bin) ->
+  DigestBin = crypto:hash(sha256, Bin),
+  DigestHex = xfutils:bin_to_hex(DigestBin),
+  % convert to lowercase
+  DigestHex.
 %%---------------------------------------------------
 -spec digest_string(binary()) -> binary().
 digest_string(Bin) ->
@@ -286,6 +303,9 @@ digest_string_test() ->
   ?assertEqual(<<"c527432e8f632d555c651eaf8e5e0b027405fa46">>, digest_string(A)).
 
 
+digest256_string(Bin) ->
+  U = digest256_string_upper(Bin),
+  list_to_binary(string:to_lower(binary_to_list(U))).
 %%---------------------------------------------------
 -spec signature_decode(binary()) -> binary().
 signature_decode(Signature) ->
@@ -294,6 +314,8 @@ signature_decode(Signature) ->
 do_sign(DigestBin, PK) when is_binary(DigestBin) ->
   base64:encode(public_key:sign(DigestBin, 'sha', PK)).
 %%  base64:encode(public_key:sign(DigestBin, 'sha256', PK)).
+do_sign256(DigestBin, PK) when is_binary(DigestBin) ->
+  base64:encode(public_key:sign(DigestBin, 'sha256', PK)).
 %%---------------------------------------------------
 out_2_in(M, PV) when is_atom(M), is_list(PV) ->
   pg_protocol:out_2_in(M, PV).

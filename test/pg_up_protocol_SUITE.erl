@@ -113,6 +113,7 @@ my_test_() ->
 %%        , fun mcht_req_test_1/0
 
         , fun send_up_collect_test_1/0
+        , fun send_up_collect_256_test_1/0
       ]
     }
   }.
@@ -343,5 +344,25 @@ send_up_collect_test_1() ->
   ok.
 
 
+%%---------------------------------------------------------------------------------------
+send_up_collect_256_test_1() ->
+  PMchtReq = protocol(mcht_req),
+  PUpReq = pg_model:set(pg_up_protocol_req_collect,
+    pg_convert:convert(pg_up_protocol_req_collect, PMchtReq), version, <<"5.1.0">>),
+  Sig = pg_up_protocol:sign256(pg_up_protocol_req_collect, PUpReq),
+  PUpReqWithSig = pg_model:set(pg_up_protocol_req_collect, PUpReq, signature, Sig),
+  ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
+
+%%  PostBody = pg_up_protocol:post_string(pg_up_protocol_req_collect, PUpReqWithSig),
+  PostBody = pg_up_protocol:in_2_out(pg_up_protocol_req_collect, PUpReqWithSig, post),
+  Url = up_config:get_config(up_back_url),
+
+  ?debugFmt("PostString = ~ts,Url = ~p", [PostBody, Url]),
+
+  {ok, {Status, Headers, Body}} = httpc:request(post,
+    {binary_to_list(Url), [], "application/x-www-form-urlencoded", iolist_to_binary(PostBody)},
+    [], []),
+  ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
 
 
+  ok.
