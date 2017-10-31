@@ -146,6 +146,7 @@ convert_config() ->
                 , {txnTime, {fun now_txn/0, []}}
                 , {orderId, {fun xfutils:get_new_order_id/0, []}}
                 , {encryptCertId, {fun get_up_encrypt_cert_id/0, []}}
+                , {version, {fun get_version/0, []}}
 
               ]
             }
@@ -272,3 +273,12 @@ get_up_back_url() ->
 
 get_up_encrypt_cert_id() ->
   up_config:get_config(encrypt_cert_id).
+
+
+get_version() ->
+  case up_config:get_config(sign_version) of
+    '5.0.0' ->
+      <<"5.0.0">>;
+    '5.1.0' ->
+      <<"5.1.0">>
+  end.

@@ -28,7 +28,6 @@
   , verify/2
   , sign_string/2
   , sign/2
-  , sign256/2
   , validate_format/1
   , save/2
   , repo_up_module/0
@@ -207,9 +206,16 @@ verify(M, P) when is_atom(M), is_tuple(P) ->
 sign(M, P) when is_atom(M), is_tuple(P) ->
   SignString = sign_string(M, P),
   MerId = pg_model:get(M, P, merId),
-  Digest = digest_string(SignString),
   Key = up_config:get_mer_prop(MerId, privateKey),
-  SignBin = do_sign(Digest, Key),
+
+  SignBin = case pg_model:get(M, P, version) of
+              <<"5.0.0">> ->
+                Digest = digest_string(SignString),
+                do_sign(Digest, Key);
+              <<"5.1.0">> ->
+                Digest = digest256_string(SignString),
+                do_sign256(Digest, Key)
+            end,
   lager:debug("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
   ?debugFmt("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
   SignBin.

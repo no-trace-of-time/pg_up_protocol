@@ -340,6 +340,7 @@ send_up_collect_test_1() ->
     [], []),
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
 
+  timer:sleep(1000),
 
   ok.
 
@@ -349,7 +350,7 @@ send_up_collect_256_test_1() ->
   PMchtReq = protocol(mcht_req),
   PUpReq = pg_model:set(pg_up_protocol_req_collect,
     pg_convert:convert(pg_up_protocol_req_collect, PMchtReq), version, <<"5.1.0">>),
-  Sig = pg_up_protocol:sign256(pg_up_protocol_req_collect, PUpReq),
+  Sig = pg_up_protocol:sign(pg_up_protocol_req_collect, PUpReq),
   PUpReqWithSig = pg_model:set(pg_up_protocol_req_collect, PUpReq, signature, Sig),
   ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
 
@@ -364,5 +365,6 @@ send_up_collect_256_test_1() ->
     [], []),
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
 
+  timer:sleep(1000),
 
   ok.
