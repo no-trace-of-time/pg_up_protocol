@@ -346,8 +346,10 @@ save_req_convert_test_1() ->
     <<"6216261000000000018">>,
     <<"68759622183">>},
   RepoUp = pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req),
-  ?assertEqual({<<"777290058110097">>, <<"20171103211953">>, <<"20171103211953426061082">>},
-    pg_model:get(pg_up_protocol:repo_up_module(), RepoUp, up_index_key)),
+  ?assertEqual([{<<"777290058110097">>, <<"20171103211953">>, <<"20171103211953426061082">>},
+    <<"6216261000000000018">>, <<"341126197709218366">>, <<"全渠道"/utf8>>, <<"13552535506">>],
+    pg_model:get(pg_up_protocol:repo_up_module(), RepoUp,
+      [up_index_key, up_accNo, up_idNo, up_idName, up_mobile])),
   ok.
 
 %%---------------------------------------------------
