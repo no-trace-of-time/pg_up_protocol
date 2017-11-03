@@ -174,6 +174,7 @@ convert_config() ->
 
                 , {up_accNo, accNoRaw}
                 , {up_idType, idType}
+                , {up_idNo, idNo}
                 , {up_idName, idName}
                 , {up_mobile, mobile}
               ]
