@@ -156,7 +156,7 @@ convert_config() ->
     },
     {save_req,
       [
-        {to, fun pg_up_protocol:repo_up_module/0},
+        {to, {fun pg_up_protocol:repo_up_module/0, []}},
         {from,
           [
             {?MODULE,

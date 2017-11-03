@@ -111,6 +111,7 @@ my_test_() ->
         , fun pg_up_protocol_req_collect:cert_id_test_1/0
         , fun pg_up_protocol_req_collect:customer_info_test_1/0
 %%        , fun mcht_req_test_1/0
+        , fun save_req_convert_test_1/0
 
         , fun send_up_collect_test_1/0
         , fun send_up_collect_256_test_1/0
@@ -322,6 +323,34 @@ mcht_req_test_1() ->
 %%    timer:sleep(1000),
   ok.
 
+%%---------------------------------------------------
+save_req_convert_test_1() ->
+  PUpReq = {pg_up_protocol_req_collect, <<"5.0.0">>, <<"UTF-8">>,
+    <<"68759663125">>, <<"0">>, <<"01">>,
+    <<"11">>, <<"02">>, <<"000501">>, <<"07">>,
+    <<"http://localhost:8888/pg/pay_succ_info">>,
+    <<"0">>, <<"777290058110097">>,
+    <<"20171103211953426061082">>,
+    <<"20171103211953">>, <<"01">>,
+    <<"EZS3Ue7Cl9p7+HERXvq8IS7qwX6M2OpIydKdvMJMKM8nXrT1Qqd5TBa8XosCReayPZpkor6s6erQfiy80J3Hp8T3qKEvv49FePxwEJSs08pHHVCBCBBGuTDLE0YLNvr7JRqbWdem3JctcgslBuuzi67K1k4NqM7OzcZZJ0lNf/+20DXcNTt8YjYLrXgehltZev2DyU7rLNup+9dfu9NR4J93qPVmKTJ2XSnTBzfRv0SDW2TqcCD0ttUKv/xChVPm6W05E1Jj/xxj8gSA2q19D9HDCLWWk6nCRnogkC6QkeV1jmTHMH1PgQFeiGtByj6OWMofGTMl6NzITTc6sOS0Fg==">>,
+    50, <<"156">>,
+    <<"e2NlcnRpZklkPTM0MTEyNjE5NzcwOTIxODM2NiZjZXJ0aWZUcD0wMSZjdXN0b21lck5tPeWFqOa4oOmBkyZlbmNyeXB0ZWRJbmZvPUR4My96Q3BMeStYY3RwK3RzZThqT3pFYlh1NTlISGVXU2NmODBQUDdZU3M0eGJQWDBTNUtUUHl0dVlHOGVjQi8xdzZhQ0I0eXRhekwzcWZQM1FBakl5RVN2L0Zsb0FVZU9SMjRYT3Y1ZUM4VG8xZnc2TlZiWmswUTRzeG1oVFNLeEpSYlNTdHExTStIb2lBUHFyblFndEc5U1dzRms5NEI0STBmRWFsUk5MaGxoZ1ZyMUJIaCtqbmE1WXRQSFE0RXZ2c1h2WUsvVVU2cUxycy8xU1FGekRaUWx3WllZNTY3ekVUbVdpQ0ttci85OUV4T1NiV0xwVW5qMFVlVDZZaERKRXpVaWc4aDhkQlRmNWdqeGVTK2tpTzg4OXdzSWRlR1hNNy9jMktPRUtTMzE0RHZRK3VkWm42Ky84ZE9kVXpVNHVxVHBURXBzQnM0NGlpZXk3U2d5dz09fQ==">>,
+    <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230,
+      152, 147>>,
+    <<>>,
+    {<<"00001">>, <<"20171021">>,
+      <<"20171021095817473460847">>},
+    <<"01">>, <<"341126197709218366">>,
+    <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
+    <<"13552535506">>,
+    <<"6216261000000000018">>,
+    <<"68759622183">>},
+  RepoUp = pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req),
+  ?assertEqual({<<"777290058110097">>, <<"20171103211953">>, <<"20171103211953426061082">>},
+    pg_model:get(pg_up_protocol:repo_up_module(), RepoUp, up_index_key)),
+  ok.
+
+%%---------------------------------------------------
 send_up_collect_test_1() ->
   PMchtReq = protocol(mcht_req),
   PUpReq = pg_convert:convert(pg_up_protocol_req_collect, PMchtReq),
