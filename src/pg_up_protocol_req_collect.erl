@@ -228,7 +228,7 @@ mer_id(MchtId) ->
   MerIdBin.
 
 mer_id_test_1() ->
-  ?assertEqual(<<"777290058110097">>, mer_id(1)),
+  ?assertEqual(<<"898319849000017">>, mer_id(1)),
   ok.
 
 cert_id(MchtId) ->
@@ -236,7 +236,7 @@ cert_id(MchtId) ->
   up_config:get_mer_prop(MerId, certId).
 
 cert_id_test_1() ->
-  ?assertEqual(<<"68759663125">>, cert_id(1)),
+  ?assertEqual(<<"70481187397">>, cert_id(1)),
   ok.
 
 channel_type(MchtId) ->
