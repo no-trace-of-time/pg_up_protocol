@@ -26,6 +26,8 @@ setup() ->
 
   application:start(inets),
 
+  env_init(),
+
   application:start(up_config),
   application:start(pg_up_protocol),
   pg_test_utils:setup(mnesia),
@@ -60,7 +62,17 @@ env_init() ->
 
       ]
     }
+    , {up_config,
+      [
+        {up_mer_list,
+          [
+            {gw_collect, {wap, ['777290058110097']}}
+          ]
+        }
+      ]
+    }
   ],
+
 
   pg_test_utils:env_init(Cfgs),
   ok.
@@ -83,6 +95,11 @@ table_data_init() ->
       [
         {id, 1}
         , {mcht_full_name, <<"test1">>}
+        , {payment_method, [gw_collect1]}
+      ],
+      [
+        {id, 2}
+        , {mcht_full_name, <<"test2">>}
         , {payment_method, [gw_collect]}
       ]
     ],
@@ -122,7 +139,7 @@ my_test_() ->
 %%---------------------------------------------------
 repo_data_test_1() ->
   [R] = pg_repo:read(?M_R_MCHANTS, 1),
-  ?assertEqual([gw_collect], pg_model:get(?M_R_MCHANTS, R, payment_method)),
+  ?assertEqual([gw_collect1], pg_model:get(?M_R_MCHANTS, R, payment_method)),
   ok.
 %%---------------------------------------------------
 qs() ->
@@ -370,6 +387,13 @@ send_up_collect_test_1() ->
     {binary_to_list(Url), [], "application/x-www-form-urlencoded", iolist_to_binary(PostBody)},
     [], []),
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
+
+  %% parse resp
+  MResp = pg_up_protocol_resp_collect,
+  RespPV = xfutils:parse_post_body(Body),
+  ProtocolUpResp = pg_protocol:out_2_in(MResp, RespPV),
+  ?debugFmt("ProtocolUpResp = ~ts", [pg_model:pr(MResp, ProtocolUpResp)]),
+  ?assertEqual(<<"UTF-8">>, pg_model:get(MResp, ProtocolUpResp, encoding)),
 
   timer:sleep(1000),
 

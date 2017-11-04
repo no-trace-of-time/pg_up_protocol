@@ -224,6 +224,7 @@ up_mer_id(MchtId) ->
 
 mer_id(MchtId) ->
   MerIdAtom = up_mer_id(MchtId),
+  ?debugFmt("MerId = ~p",[MerIdAtom]),
   MerIdBin = atom_to_binary(MerIdAtom, utf8),
   MerIdBin.
 
@@ -233,10 +234,12 @@ mer_id_test_1() ->
 
 cert_id(MchtId) ->
   MerId = up_mer_id(MchtId),
-  up_config:get_mer_prop(MerId, certId).
+  CertId = up_config:get_mer_prop(MerId, certId),
+  ?debugFmt("CertId = ~p~n", [CertId]),
+  CertId.
 
 cert_id_test_1() ->
-  ?assertEqual(<<"70481187397">>, cert_id(1)),
+  ?assertEqual(<<"68759663125">>, cert_id(1)),
   ok.
 
 channel_type(MchtId) ->
