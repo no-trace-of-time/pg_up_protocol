@@ -134,7 +134,7 @@ convert_config() ->
                 , {merId, {fun mer_id/1, [mcht_id]}}
                 , {certId, {fun cert_id/1, [mcht_id]}}
                 , {txnAmt, txn_amt}
-                , {reqReserved, order_desc}
+%%                , {reqReserved, order_desc}
                 , {channelType, {fun channel_type/1, [mcht_id]}}
                 , {idType, id_type}
                 , {idNo, id_no}
