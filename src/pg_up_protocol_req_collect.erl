@@ -190,16 +190,19 @@ convert_config() ->
 customer_info_raw(IdType, IdNo, IdName, Mobile)
   when is_binary(IdType), is_binary(IdNo), is_binary(IdName), is_binary(Mobile) ->
   PhoneInfo = <<"phoneNo=", Mobile/binary>>,
+  lager:debug("Sends Info phone info = ~p", [PhoneInfo]),
 %%  ?debugFmt("PhoneInfo=[~ts]", [PhoneInfo]),
   EncryptedInfo = encrypt_sens_info(PhoneInfo),
-  <<
+  Return = <<
     "{"
     , "certifId=", IdNo/binary, "&"
     , "certifTp=", IdType/binary, "&"
     , "customerNm=", IdName/binary, "&"
     , "encryptedInfo=", EncryptedInfo/binary
     , "}"
-  >>.
+  >>,
+  lager:debug("customer info raw  = ~ts", [Return]),
+  Return.
 customer_info(IdType, IdNo, IdName, Mobile)
   when is_binary(IdType), is_binary(IdNo), is_binary(IdName), is_binary(Mobile) ->
   Info = customer_info_raw(IdType, IdNo, IdName, Mobile),
@@ -224,7 +227,7 @@ up_mer_id(MchtId) ->
 
 mer_id(MchtId) ->
   MerIdAtom = up_mer_id(MchtId),
-  ?debugFmt("MerId = ~p",[MerIdAtom]),
+  ?debugFmt("MerId = ~p", [MerIdAtom]),
   MerIdBin = atom_to_binary(MerIdAtom, utf8),
   MerIdBin.
 
