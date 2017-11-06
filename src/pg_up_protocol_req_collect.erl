@@ -46,7 +46,7 @@
   , signature = <<"0">> :: pg_up_protocol:signature()
   , signMethod = <<"01">> :: pg_up_protocol:signMethod()
   , txnType = <<"11">> :: pg_up_protocol:txnType()
-  , txnSubType = <<"02">> :: pg_up_protocol:txnSubType()
+  , txnSubType = <<"00">> :: pg_up_protocol:txnSubType()
   , bizType = <<"000501">> :: pg_up_protocol:bizType()
   , channelType = <<"07">> :: pg_up_protocol:channelType()
   , backUrl = <<"0">> :: pg_up_protocol:url()
