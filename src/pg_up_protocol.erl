@@ -28,6 +28,7 @@
   , verify/2
   , sign_string/2
   , sign/2
+  , sign/4
   , validate_format/1
   , save/2
   , repo_up_module/0
@@ -205,15 +206,32 @@ verify(M, P) when is_atom(M), is_tuple(P) ->
 
 sign(M, P) when is_atom(M), is_tuple(P) ->
   SignString = sign_string(M, P),
-  MerId = pg_model:get(M, P, merId),
+  [Version, MerId] = pg_model:get(M, P, [version, merId]),
+  sign(M, SignString, Version, MerId).
+%%------------------------------------------------
+-spec sign(M, SignString, Version, MerId) -> Sig when
+  M :: atom(),
+  SignString :: binary(),
+  Version :: pg_up_protocol:version(),
+  MerId :: pg_up_protocol:merId(),
+  Sig :: binary() | iolist().
+
+sign(M, SignString, Version, MerId)
+  when is_atom(M), is_binary(SignString), is_binary(Version), is_binary(MerId) ->
+  %% sign string directly
+
+%%  MerId = pg_model:get(M, P, merId),
   Key = up_config:get_mer_prop(MerId, privateKey),
 
-  SignBin = case pg_model:get(M, P, version) of
+%%  SignBin = case pg_model:get(M, P, version) of
+  SignBin = case Version of
               <<"5.0.0">> ->
                 Digest = digest_string(SignString),
+                ?debugFmt("Digest128 = ~p", [Digest]),
                 do_sign(Digest, Key);
               <<"5.1.0">> ->
                 Digest = digest256_string(SignString),
+                ?debugFmt("Digest256 = ~p", [Digest]),
                 do_sign256(Digest, Key)
             end,
   lager:debug("SignString = ~ts,Sig=~ts", [SignString, SignBin]),
@@ -342,4 +360,7 @@ sign_aaa_test_1() ->
   SignBin = do_sign(Digest, Key),
   ?assertEqual(<<"xdzlekQXkOvFHxw+O5av+M5ldunyEEswIj/LHztkqaTbCDk+4b7nzSRSYRxfpOXv+boye9F7mqUXEDQarEct0TeauUxPtBkQidnZCbh0nZRvkT4B/OrX8iWpINEabGkh200nd16oere7Zw/u0AvMvroOcagGFkHzzD8NPvAk0gPhNNhTqD9sh6VRkWgjxcoQdpJsqgP9H8GG4TJHHkQ9Yf8coPdyZEbRHfBhbstyWxZ1D/9hPNtoER09AVikzqj/zF6AKGFbaPPBfLD0ym/ZVwyum1cIJ87aHtWsz1F8NkKOvBkc0IZCZ+cbpwlkNOBJxtA46IYZHitern54ehVCWw==">>
     , SignBin),
+
+  ?assertEqual(<<"FwMQZpbIMqrGkmB3HjNLir4FcKSBExAKaHVQJi4dd/TzAFicCQGLFcPcKJSX0uIp5KHSpuN2B5JjTvTdtstj7cVgAlHyWZkYhOg0tsK3QG706FwcpcwW9HCyy0UH9TxaBZ8+Iip81Ntt3eK8DJZPaTI04dBlXOz3xkrhUZWm8MgIABlAxNkRD+xBQTEfDqyXbXKjjUHVRoeB2r3DDhYVnUAQoXf7DHzBmz70q3Q3eMD0cXhuwrsIQVXMFb90qQgMiAzB8fvjMuGFy0EXhNUc8edVes3oNa5fkHoPxMfyLjNMao7isWx7wGq8rWwwTXI9Fv0KrEdosAgIW9+0lNZAog==">>
+    , sign(pg_up_protocol_req_collect, <<"abc">>, <<"5.1.0">>, <<"898319849000017">>)),
   ok.
