@@ -386,7 +386,7 @@ send_up_collect_test_1() ->
 
   {ok, {Status, Headers, Body}} = httpc:request(post,
     {binary_to_list(Url), [], "application/x-www-form-urlencoded", iolist_to_binary(PostBody)},
-    [], []),
+    [], [{body_format, binary}]),
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
 
   %% parse resp
@@ -395,6 +395,7 @@ send_up_collect_test_1() ->
   ProtocolUpResp = pg_protocol:out_2_in(MResp, RespPV),
   ?debugFmt("ProtocolUpResp = ~ts", [pg_model:pr(MResp, ProtocolUpResp)]),
   ?assertEqual(<<"UTF-8">>, pg_model:get(MResp, ProtocolUpResp, encoding)),
+  ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
   timer:sleep(1000),
 
@@ -418,8 +419,9 @@ send_up_collect_256_test_1() ->
 
   {ok, {Status, Headers, Body}} = httpc:request(post,
     {binary_to_list(Url), [], "application/x-www-form-urlencoded", iolist_to_binary(PostBody)},
-    [], []),
+    [], [{body_format, binary}]),
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
+  ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
   timer:sleep(1000),
 
