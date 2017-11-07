@@ -9,14 +9,6 @@
         sasl,
         ssl
       ]},
-    {included_applications,
-      [
-        pg_model
-        , pg_repo
-        , pg_protocol
-        , up_config
-        , pg_mcht_protocol
-      ]},
     {env, [
       {up_repo_name, repo_up_txn_log_pt}
       , {mchants_repo_name, repo_mchants_pt}
