@@ -18,8 +18,11 @@
 -define(M_P_REQ, pg_up_protocol_t_protocol_up_req_pay).
 -define(M_R_MCHANTS, pg_up_protocol_t_repo_mchants_pt).
 -define(M_P_MCHT_REQ, pg_mcht_protocol_req_collect).
+-define(APP, pg_up_protocol).
 
 -compile(export_all).
+
+
 
 setup() ->
   lager:start(),
@@ -224,7 +227,7 @@ qs(batch_collect) ->
     , {<<"signature">>, <<"7D2B74AF2BCC3B1C4C1B6FF2328E3C27881FB0497FB0413D4E53801047E1F83CD19CE97B4D9A0C4C7D9BD17B3D9AF4F652536EAA6076E1A1B5D1E7C53A6E3CF1572C8647407BFEF7CD5BBE8ECF210EA495A4335E43A012E4CAF17B6E9FD7813D2E6D44D52B84D823FF8EBD156E10B446E673994DFA1060F1C1D5371DB618439E2FD666BC1E99A49BCC1642A44592292A8942373967E48A51D27C2C5DD8276F679CD30025C3E8ED9F22B004494DFBA2DB0EEA311A5596B6D4B4067CD534A5CFCF61CE1086C6871CE33AF8525E1F2A7B0F8FF33A7D6CF431FB0A309A6441DBF414C7A4F7DF3D1FC2734C40913D566D900B32DA85D01D0583FF0AA69EC326C2E01A">>}
     , {<<"trustBackUrl">>, <<"http://localhost:8888/pg/simu_mcht_back_succ_info">>}
     , {<<"tranCount">>, <<"3">>}
-    , {<<"fileContent">>, <<"aaa">>}
+    , {<<"fileContent">>, file_content()}
     , {<<"batchNo">>, <<"0009">>}
     , {<<"reqReserved">>, <<"qqq">>}
   ].
@@ -246,6 +249,15 @@ protocol(mcht_req) ->
   pg_protocol:out_2_in(?M_P_MCHT_REQ, qs(mcht_req));
 protocol(mcht_req_batch_collect) ->
   pg_protocol:out_2_in(pg_mcht_protocol_req_batch_collect, qs(batch_collect)).
+
+%%--------------------------------------------------------------------
+file_content() ->
+  FileName = "DK00000000700000000000001201509110003I.txt",
+  FilePathName = code:lib_dir(?APP) ++ "/test/" ++ FileName,
+  ?debugFmt("FilePathName = ~p", [FilePathName]),
+  {ok, FileContentBin} = file:read_file(FilePathName),
+  ?debugFmt("FileContent in ~p = ~p", [FilePathName, FileContentBin]),
+  base64:encode(xfutils:deflate(FileContentBin)).
 
 
 %%---------------------------------------------------

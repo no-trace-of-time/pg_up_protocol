@@ -234,4 +234,5 @@ batch_no(BatchNo) when is_integer(BatchNo) ->
   list_to_binary(io_lib:format("~4..0B", [BatchNo])).
 
 file_content(FileContent) when is_binary(FileContent) ->
-  base64:encode(xfutils:deflate(FileContent)).
+  FileContent.
+%%  base64:encode(xfutils:deflate(FileContent)).
