@@ -48,6 +48,11 @@
 -type cardTransData() :: any().
 -type orderDesc() :: any().
 
+-type batchNo() :: byte4().     %% 0001 - 9999
+-type totalQty() :: non_neg_integer().
+-type totalAmt() :: non_neg_integer().
+-type fileContent() :: binary().
+
 %% reply & inform packet
 -type respCode() :: byte2().
 -type respMsg() :: any().
@@ -125,6 +130,10 @@
   , payCardIssueName/0
   , bindId/0
   , file_transfer_type/0
+  , batchNo/0
+  , totalQty/0
+  , totalAmt/0
+  , fileContent/0
 ]).
 
 -define(UP_VERSION, <<"5.0.0">>).

@@ -132,6 +132,8 @@ my_test_() ->
 
         , fun send_up_collect_test_1/0
         , fun send_up_collect_256_test_1/0
+
+        , fun send_up_batch_collect_test_1/0
       ]
     }
   }.
@@ -210,13 +212,30 @@ qs(mcht_req) ->
 %%    , {<<"certifName">>, <<"aaa"/utf8>>}
     , {<<"phoneNo">>, <<"13552535506">>}
     , {<<"trustBackUrl">>, <<"http://localhost:8888/pg/simu_mcht_back_succ_info">>}
+  ];
+qs(batch_collect) ->
+  [
+    {<<"tranAmt">>, <<"130000">>}
+    , {<<"orderDesc">>, <<"测试交易"/utf8>>}
+    , {<<"merchId">>, <<"00001">>}
+    , {<<"tranId">>, <<"20171021095817473460847">>}
+    , {<<"tranDate">>, <<"20171021">>}
+    , {<<"tranTime">>, <<"095817">>}
+    , {<<"signature">>, <<"7D2B74AF2BCC3B1C4C1B6FF2328E3C27881FB0497FB0413D4E53801047E1F83CD19CE97B4D9A0C4C7D9BD17B3D9AF4F652536EAA6076E1A1B5D1E7C53A6E3CF1572C8647407BFEF7CD5BBE8ECF210EA495A4335E43A012E4CAF17B6E9FD7813D2E6D44D52B84D823FF8EBD156E10B446E673994DFA1060F1C1D5371DB618439E2FD666BC1E99A49BCC1642A44592292A8942373967E48A51D27C2C5DD8276F679CD30025C3E8ED9F22B004494DFBA2DB0EEA311A5596B6D4B4067CD534A5CFCF61CE1086C6871CE33AF8525E1F2A7B0F8FF33A7D6CF431FB0A309A6441DBF414C7A4F7DF3D1FC2734C40913D566D900B32DA85D01D0583FF0AA69EC326C2E01A">>}
+    , {<<"trustBackUrl">>, <<"http://localhost:8888/pg/simu_mcht_back_succ_info">>}
+    , {<<"tranCount">>, <<"3">>}
+    , {<<"fileContent">>, <<"aaa">>}
+    , {<<"batchNo">>, <<"0009">>}
+    , {<<"reqReserved">>, <<"qqq">>}
   ].
 
 pk() ->
   {<<"898319849000018">>, <<"20170206160227">>, <<"20170206160227544228896">>}.
 
 pk(mcht_req) ->
-  {<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>}.
+  {<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>};
+pk(batch_collect) ->
+  {<<"00001">>, <<"20171111">>, <<"20171021095817473460847">>}.
 
 protocol() ->
   pg_protocol:out_2_in(?M_P, qs()).
@@ -224,9 +243,12 @@ protocol() ->
 protocol(req) ->
   pg_protocol:out_2_in(?M_P_REQ, qs(req));
 protocol(mcht_req) ->
-  pg_protocol:out_2_in(?M_P_MCHT_REQ, qs(mcht_req)).
+  pg_protocol:out_2_in(?M_P_MCHT_REQ, qs(mcht_req));
+protocol(mcht_req_batch_collect) ->
+  pg_protocol:out_2_in(pg_mcht_protocol_req_batch_collect, qs(batch_collect)).
 
 
+%%---------------------------------------------------
 verify_test_1() ->
   ?assertEqual(ok, pg_up_protocol:verify(?M_P, protocol())),
   ok.
@@ -405,6 +427,7 @@ send_up_collect_test_1() ->
 %%---------------------------------------------------------------------------------------
 send_up_collect_256_test_1() ->
   PMchtReq = protocol(mcht_req),
+  ?debugFmt("PMchtReq = ~p", [PMchtReq]),
   PUpReq = pg_model:set(pg_up_protocol_req_collect,
     pg_convert:convert(pg_up_protocol_req_collect, PMchtReq), version, <<"5.1.0">>),
   Sig = pg_up_protocol:sign(pg_up_protocol_req_collect, PUpReq),
@@ -422,6 +445,36 @@ send_up_collect_256_test_1() ->
     [], [{body_format, binary}]),
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
   ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
+
+  timer:sleep(1000),
+
+  ok.
+%%---------------------------------------------------
+send_up_batch_collect_test_1() ->
+  PMchtReq = protocol(mcht_req_batch_collect),
+  PUpReq = pg_convert:convert(pg_up_protocol_req_batch_collect, PMchtReq),
+  Sig = pg_up_protocol:sign(pg_up_protocol_req_batch_collect, PUpReq),
+  PUpReqWithSig = pg_model:set(pg_up_protocol_req_batch_collect, PUpReq, signature, Sig),
+  ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
+
+%%  PostBody = pg_up_protocol:post_string(pg_up_protocol_req_collect, PUpReqWithSig),
+  PostBody = pg_up_protocol:in_2_out(pg_up_protocol_req_batch_collect, PUpReqWithSig, post),
+  Url = up_config:get_config(up_batch_url),
+
+  ?debugFmt("PostString = ~ts,Url = ~p", [PostBody, Url]),
+
+  {ok, {Status, Headers, Body}} = httpc:request(post,
+    {binary_to_list(Url), [], "application/x-www-form-urlencoded", iolist_to_binary(PostBody)},
+    [], [{body_format, binary}]),
+  ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
+
+  %% parse resp
+%%  MResp = pg_up_protocol_resp_collect,
+%%  RespPV = xfutils:parse_post_body(Body),
+%%  ProtocolUpResp = pg_protocol:out_2_in(MResp, RespPV),
+%%  ?debugFmt("ProtocolUpResp = ~ts", [pg_model:pr(MResp, ProtocolUpResp)]),
+%%  ?assertEqual(<<"UTF-8">>, pg_model:get(MResp, ProtocolUpResp, encoding)),
+%%  ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
   timer:sleep(1000),
 

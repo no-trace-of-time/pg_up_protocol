@@ -66,6 +66,10 @@
   , up_idNo
   , up_idName
   , up_mobile
+
+  , up_batchNo
+  , up_totalQty
+  , up_fileContent
 }).
 
 -type ?TBL() :: #?TBL{}.

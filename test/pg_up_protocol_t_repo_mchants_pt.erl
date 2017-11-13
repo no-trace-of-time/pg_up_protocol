@@ -27,6 +27,7 @@
   , mcht_short_name = <<"">>
   , status = normal
   , payment_method = [gw_netbank]
+  , sign_method = rsa_hex
   , up_mcht_id = <<"">>
   , quota = [{txn, -1}, {daily, -1}, {monthly, -1}]
   , up_term_no = <<"12345678">>

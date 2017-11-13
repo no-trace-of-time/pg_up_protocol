@@ -157,6 +157,11 @@ in_2_out_map() ->
 
     , accType => <<"accType">>
     , encryptCertId => <<"encryptCertId">>
+
+    , batchNo => <<"batchNo">>
+    , totalQty => {<<"totalQty">>, integer}
+    , totalAmt => {<<"totalAmt">>, integer}
+    , fileContent => <<"fileContent">>
   }.
 
 %%------------------------------------------------------
