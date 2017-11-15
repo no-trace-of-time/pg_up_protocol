@@ -32,20 +32,20 @@
 -define(TXN, ?MODULE).
 
 -record(?TXN, {
-  version = <<"5.0.0">> :: up_version()
-  , encoding = <<"UTF-8">> :: up_encoding()
-  , certId = <<"9">> :: up_certId()
-  , signature = <<"9">> :: up_signature()
-  , signMethod = <<"01">> :: up_signMethod()
-  , txnType = <<"00">> :: up_txnType()
-  , txnSubType = <<"00">> :: up_txnSubType()
-  , bizType = <<"000201">> :: up_bizType()
+  version = <<"5.0.0">> :: pg_up_protocol:up_version()
+  , encoding = <<"UTF-8">> :: pg_up_protocol:up_encoding()
+  , certId = <<"9">> :: pg_up_protocol:up_certId()
+  , signature = <<"9">> :: pg_up_protocol:up_signature()
+  , signMethod = <<"01">> :: pg_up_protocol:up_signMethod()
+  , txnType = <<"00">> :: pg_up_protocol:up_txnType()
+  , txnSubType = <<"00">> :: pg_up_protocol:up_txnSubType()
+  , bizType = <<"000201">> :: pg_up_protocol:up_bizType()
   , channelType = <<"07">>
-  , accessType = <<"0">> :: up_accessType()
-  , merId = <<"012345678901234">> :: up_merId()
-  , txnTime = <<"19991212121212">> :: up_txnTime()
-  , orderId = <<"01234567">> :: up_orderId()
-  , queryId = <<>> :: up_queryId()
+  , accessType = <<"0">> :: pg_up_protocol:up_accessType()
+  , merId = <<"012345678901234">> :: pg_up_protocol:up_merId()
+  , txnTime = <<"19991212121212">> :: pg_up_protocol:up_txnTime()
+  , orderId = <<"01234567">> :: pg_up_protocol:up_orderId()
+  , queryId = <<>> :: pg_up_protocol:up_queryId()
 }).
 -type ?TXN() :: #?TXN{}.
 %%-opaque ?TXN() :: #?TXN{}.

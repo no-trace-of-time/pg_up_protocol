@@ -10,7 +10,7 @@
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("mixer/include/mixer.hrl").
 -compile({parse_trans, exprecs}).
--compile({parse_trans, ct_expand}).
+%%-compile({parse_trans, ct_expand}).
 -author("simon").
 -behaviour(pg_model).
 -behavior(pg_protocol).
