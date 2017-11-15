@@ -27,7 +27,7 @@
 -type orderId() :: byte8_up().      % AN8..32
 -type txnTime() :: byte14().      % YYYYMMDDhhmmss
 -type accType() :: byte2().        % N2
--type accNo() :: any().          % AN1..512
+-type accNo() :: binary().          % AN1..512
 -type txnAmt() :: non_neg_integer().
 -type currencyCode() :: byte3().    % N3
 -type customerInfo() :: any().
@@ -67,6 +67,7 @@
 -type exchangeDate() :: any().
 -type exchangeRate() :: any().
 -type payCardNo() :: any().
+-type payCardType() :: binary().
 -type payCardIssueName() :: any().
 -type bindId() :: any().
 
@@ -76,6 +77,8 @@
 
 %% file transfer
 -type file_transfer_type() :: byte2().
+
+-type signPubKeyCert() :: binary().
 
 -export_type([
   version/0
@@ -134,6 +137,8 @@
   , totalQty/0
   , totalAmt/0
   , fileContent/0
+  , payCardType/0
+  , signPubKeyCert/0
 ]).
 
 -define(UP_VERSION, <<"5.0.0">>).

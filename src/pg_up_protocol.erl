@@ -1,6 +1,7 @@
 -module(pg_up_protocol).
 -include_lib("eunit/include/eunit.hrl").
 -include("include/type_up_protocol.hrl").
+-compile({parse_trans, ct_expand}).
 %%-behavior(pg_model).
 %%-behavior(pg_protocol).
 

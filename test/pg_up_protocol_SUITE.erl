@@ -137,6 +137,9 @@ my_test_() ->
         , fun send_up_collect_256_test_1/0
 
         , fun send_up_batch_collect_test_1/0
+
+        , fun info_collect_test_1/0
+
       ]
     }
   }.
@@ -491,3 +494,37 @@ send_up_batch_collect_test_1() ->
   timer:sleep(1000),
 
   ok.
+%%---------------------------------------------------
+info_collect_test_1() ->
+  M = pg_up_protocol_info_collect,
+  P = pg_model:new(M, [
+    {merId, <<"111">>}
+    , {txnTime, <<"20170101">>}
+    , {orderId, <<"9999">>}
+    , {respCode, <<"00">>}
+    , {respMsg, <<"succ">>}
+    , {settleDate, <<"20170202">>}
+    , {queryId, <<"qqq">>}
+    , {traceNo, <<"traceNo">>}
+    , {traceTime, <<"201701011010">>}
+  ]),
+  VL = pg_convert:convert(M, P),
+  ?assertEqual(
+    [
+      {<<"111">>, <<"20170101">>, <<"9999">>}
+      , <<"00">>
+      , <<"succ">>
+      , success
+      , <<"20170202">>
+      , <<"qqq">>
+      , <<"traceNo">>
+      , <<"201701011010">>
+
+    ], [proplists:get_value(Key, VL)
+      || Key <-
+        [up_index_key, up_respCode, up_respMsg, txn_status,
+          up_settleDate, up_queryId, up_traceNo, up_traceTime]]
+  ),
+
+  ok.
+
