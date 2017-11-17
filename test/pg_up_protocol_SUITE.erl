@@ -99,11 +99,13 @@ table_data_init() ->
         {id, 1}
         , {mcht_full_name, <<"test1">>}
         , {payment_method, [gw_collect1]}
+        , {up_term_no, <<"12345678">>}
       ],
       [
         {id, 2}
         , {mcht_full_name, <<"test2">>}
         , {payment_method, [gw_collect]}
+        , {up_term_no, <<"12345670">>}
       ]
     ],
 
@@ -345,7 +347,7 @@ mcht_req_test_1() ->
   ?assertEqual(Exp, pg_model:set(pg_up_protocol_req_collect, PUpReq, accNo, <<"">>)),
 
   %% save up_req_collect
-  MRepo = pg_up_protocol:repo_up_module(),
+  MRepo = pg_up_protocol:repo_module(up_txn_log),
 
   ?assertEqual(
     {up_txn_log, {<<"00001">>, <<"20171021">>,
@@ -380,7 +382,8 @@ mcht_req_test_1() ->
 
 %%---------------------------------------------------
 save_req_convert_test_1() ->
-  PUpReq = {pg_up_protocol_req_collect, <<"5.0.0">>, <<"UTF-8">>,
+  M = pg_up_protocol_req_collect,
+  PUpReq = {M, <<"5.0.0">>, <<"UTF-8">>,
     <<"68759663125">>, <<"0">>, <<"01">>,
     <<"11">>, <<"02">>, <<"000501">>, <<"07">>,
     <<"http://localhost:8888/pg/pay_succ_info">>,
@@ -393,17 +396,20 @@ save_req_convert_test_1() ->
     <<230, 181, 139, 232, 175, 149, 228, 186, 164, 230,
       152, 147>>,
     <<>>,
-    {<<"00001">>, <<"20171021">>,
-      <<"20171021095817473460847">>},
+    {<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>},
     <<"01">>, <<"341126197709218366">>,
     <<229, 133, 168, 230, 184, 160, 233, 129, 147>>,
     <<"13552535506">>,
     <<"6216261000000000018">>,
-    <<"68759622183">>},
-  RepoUp = pg_convert:convert(pg_up_protocol_req_collect, PUpReq, save_req),
+    <<"68759622183">>,
+    <<"12345678">>},
+  ?debugFmt("PUpReq = ~ts", [pg_model:pr(M, PUpReq)]),
+  ?assertEqual({<<"00001">>, <<"20171021">>, <<"20171021095817473460847">>},
+    pg_model:get(M, PUpReq, mcht_index_key)),
+  RepoUp = pg_convert:convert(M, PUpReq, save_req),
   ?assertEqual([{<<"777290058110097">>, <<"20171103211953">>, <<"20171103211953426061082">>},
     <<"6216261000000000018">>, <<"341126197709218366">>, <<"全渠道"/utf8>>, <<"13552535506">>],
-    pg_model:get(pg_up_protocol:repo_up_module(), RepoUp,
+    pg_model:get(pg_up_protocol:repo_module(up_txn_log), RepoUp,
       [up_index_key, up_accNo, up_idNo, up_idName, up_mobile])),
   ok.
 

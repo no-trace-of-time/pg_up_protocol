@@ -80,6 +80,8 @@
 
 -type signPubKeyCert() :: binary().
 
+-type mcht_index_key() :: {binary(), binary(), binary()}.
+
 -export_type([
   version/0
   , encoding/0
@@ -139,6 +141,7 @@
   , fileContent/0
   , payCardType/0
   , signPubKeyCert/0
+  , mcht_index_key/0
 ]).
 
 -define(UP_VERSION, <<"5.0.0">>).

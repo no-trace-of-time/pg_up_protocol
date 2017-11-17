@@ -32,7 +32,7 @@
   , sign/4
   , validate_format/1
   , save/2
-  , repo_up_module/0
+  , repo_module/1
   , out_2_in/2
   , in_2_out/3
 ]).
@@ -274,8 +274,11 @@ save(M, P) when is_atom(M), is_tuple(P) ->
 
 
 %%------------------------------------------------
-repo_up_module() ->
+repo_module(up_txn_log) ->
   {ok, Module} = application:get_env(?APP, up_repo_name),
+  Module;
+repo_module(mchants) ->
+  {ok, Module} = application:get_env(?APP, mchants_repo_name),
   Module.
 %%====================================================================
 %% Internal functions

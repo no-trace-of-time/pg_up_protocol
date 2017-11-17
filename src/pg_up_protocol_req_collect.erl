@@ -62,13 +62,14 @@
   , customerInfo = <<>> :: pg_up_protocol:customerInfo()
   , reqReserved = <<>> :: pg_up_protocol:reqReserved()
   , reserved = <<>> :: pg_up_protocol:reserved()
-  , mcht_index_key
+  , mcht_index_key = <<>> :: pg_up_protocol:mcht_index_key()
   , idType = <<>> :: pg_mcht_protocol:id_type()
   , idNo = <<>> :: pg_mcht_protocol:id_no()
   , idName = <<>> :: pg_mcht_protocol:id_name()
   , mobile = <<>> :: pg_mcht_protocol:mobile()
   , accNoRaw = <<>> :: pg_up_protocol:accNo()
   , encryptCertId = <<>> :: pg_up_protocol:encryptCertId()
+  , termId = <<"01234567">> :: pg_up_protocol:termId()
 }).
 
 -type ?P() :: #?P{}.
@@ -94,6 +95,7 @@ sign_fields() ->
     , reqReserved
     , reserved
     , signMethod
+    , termId
     , txnAmt
     , txnSubType
     , txnTime
@@ -127,8 +129,7 @@ convert_config() ->
           [
             {pg_mcht_protocol, pg_mcht_protocol_req_collect,
               [
-                {mcht_index_key, mcht_index_key}
-                , {accNo, {fun bank_card_no/1, [bank_card_no]}}
+                {accNo, {fun bank_card_no/1, [bank_card_no]}}
 %%                , {accNo, bank_card_no}
                 , {customerInfo, {fun customer_info/4, [id_type, id_no, id_name, mobile]}}
                 , {merId, {fun mer_id/1, [mcht_id]}}
@@ -146,7 +147,9 @@ convert_config() ->
                 , {txnTime, {fun now_txn/0, []}}
                 , {orderId, {fun xfutils:get_new_order_id/0, []}}
                 , {encryptCertId, {fun get_up_encrypt_cert_id/0, []}}
+                , {termId, {fun get_term_id/1, [mcht_id]}}
                 , {version, {fun get_version/0, []}}
+                , {mcht_index_key, mcht_index_key}
 
               ]
             }
@@ -156,7 +159,7 @@ convert_config() ->
     },
     {save_req,
       [
-        {to, {fun pg_up_protocol:repo_up_module/0, []}},
+        {to, {fun repo_up_module/0, []}},
         {from,
           [
             {?MODULE,
@@ -185,6 +188,8 @@ convert_config() ->
     }
   ].
 
+repo_up_module() ->
+  pg_up_protocol:repo_module(up_txn_log).
 
 -define(APP, pg_up_protocol).
 customer_info_raw(IdType, IdNo, IdName, Mobile)
@@ -220,7 +225,8 @@ customer_info_test_1() ->
   ok.
 
 up_mer_id(MchtId) ->
-  {ok, MRepoMchants} = application:get_env(?APP, mchants_repo_name),
+  MRepoMchants = pg_up_protocol:repo_module(mchants),
+%%  {ok, MRepoMchants} = application:get_env(?APP, mchants_repo_name),
   [PaymentMethod] = pg_repo:fetch_by(MRepoMchants, MchtId, payment_method),
   MerId = up_config:get_mer_id(PaymentMethod),
   MerId.
@@ -289,3 +295,7 @@ get_version() ->
     '5.1.0' ->
       <<"5.1.0">>
   end.
+
+get_term_id(MchtId) ->
+  MRepoMcht = pg_up_protocol:repo_module(mchants),
+  pg_repo:fetch_by(MRepoMcht, MchtId, up_term_no).

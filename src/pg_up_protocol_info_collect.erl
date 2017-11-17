@@ -143,7 +143,7 @@ convert_config() ->
     %% mcht_req_collect -> up_req_collect
     {save_resp,
       [
-        {to, {fun pg_up_protocol:repo_up_module/0, []}},
+        {to, {fun repo_up_module/0, []}},
         {from,
           [
             {?MODULE,
@@ -160,5 +160,7 @@ convert_config() ->
     }
   ].
 
+repo_up_module() ->
+  pg_up_protocol:repo_module(up_txn_log).
 
 -define(APP, pg_up_protocol).
