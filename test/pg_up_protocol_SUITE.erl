@@ -505,11 +505,11 @@ info_collect_test_1() ->
   M = pg_up_protocol_info_collect,
   P = pg_model:new(M, [
     {merId, <<"111">>}
-    , {txnTime, <<"20170101">>}
+    , {txnTime, <<"20171115104441">>}
     , {orderId, <<"9999">>}
     , {respCode, <<"00">>}
     , {respMsg, <<"succ">>}
-    , {settleDate, <<"20170202">>}
+    , {settleDate, <<"1115">>}
     , {queryId, <<"qqq">>}
     , {traceNo, <<"traceNo">>}
     , {traceTime, <<"201701011010">>}
@@ -517,11 +517,11 @@ info_collect_test_1() ->
   VL = pg_convert:convert(M, P),
   ?assertEqual(
     [
-      {<<"111">>, <<"20170101">>, <<"9999">>}
+      {<<"111">>, <<"20171115104441">>, <<"9999">>}
       , <<"00">>
       , <<"succ">>
       , success
-      , <<"20170202">>
+      , <<"20171115">>
       , <<"qqq">>
       , <<"traceNo">>
       , <<"201701011010">>

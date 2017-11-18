@@ -128,7 +128,7 @@ convert_config() ->
                 {up_respCode, respCode},
                 {up_respMsg, respMsg},
                 {txn_status, {fun xfutils:up_resp_code_2_txn_status/1, [respCode]}},
-                {up_settleDate, settleDate},
+                {up_settleDate, {fun get_settle_date/2, [settleDate, txnTime]}},
                 {up_queryId, queryId},
                 {up_traceNo, traceNo},
                 {up_traceTime, traceTime}
@@ -164,3 +164,13 @@ repo_up_module() ->
   pg_up_protocol:repo_module(up_txn_log).
 
 -define(APP, pg_up_protocol).
+
+get_settle_date(SettleDateMMDD, <<TxnDate_YYYYMMDD:8/bytes, _/binary>> = TxnTime)
+  when is_binary(SettleDateMMDD), is_binary(TxnTime) ->
+  SettleDate_YYYYMMDD = xfutils:prefix_yyyy_2_settle_date(SettleDateMMDD, TxnDate_YYYYMMDD),
+  SettleDate_YYYYMMDD.
+
+get_settle_date_test() ->
+  ?assertEqual(<<"20170603">>, get_settle_date(<<"0603">>, <<"201706031111111">>)),
+  ?assertEqual(<<"20180603">>, get_settle_date(<<"0603">>, <<"20170604">>)),
+  ok.
