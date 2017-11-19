@@ -221,7 +221,7 @@ now_txn() ->
   datetime_x_fin:now(txn).
 
 get_up_back_url() ->
-  up_config:get_config(pg_back_url).
+  up_config:get_config(pg_batch_collect_back_url).
 
 
 get_version() ->

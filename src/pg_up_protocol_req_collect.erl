@@ -282,7 +282,7 @@ now_txn() ->
   datetime_x_fin:now(txn).
 
 get_up_back_url() ->
-  up_config:get_config(pg_back_url).
+  up_config:get_config(pg_collect_back_url).
 
 get_up_encrypt_cert_id() ->
   up_config:get_config(encrypt_cert_id).
