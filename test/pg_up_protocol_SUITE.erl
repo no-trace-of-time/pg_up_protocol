@@ -377,6 +377,7 @@ mcht_req_test_1() ->
   ?assertEqual([pk(mcht_req), collect, waiting, <<"898319849000017">>],
     pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
 
+
 %%    timer:sleep(1000),
   ok.
 
@@ -411,6 +412,12 @@ save_req_convert_test_1() ->
     <<"6216261000000000018">>, <<"341126197709218366">>, <<"全渠道"/utf8>>, <<"13552535506">>],
     pg_model:get(pg_up_protocol:repo_module(up_txn_log), RepoUp,
       [up_index_key, up_accNo, up_idNo, up_idName, up_mobile])),
+
+  %% convert to query
+  PUpQuery = pg_convert:convert(pg_up_protocol_req_query, RepoUp),
+  ?debugFmt("PUpQuery = ~ts", [pg_model:pr(pg_up_protocol_req_query, PUpQuery)]),
+  ?assertEqual([<<"777290058110097">>, <<"20171103211953426061082">>],
+    pg_model:get(pg_up_protocol_req_query, PUpQuery, [merId, orderId])),
   ok.
 
 %%---------------------------------------------------
