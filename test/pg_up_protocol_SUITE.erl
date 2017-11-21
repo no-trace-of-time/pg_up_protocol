@@ -122,25 +122,25 @@ my_test_() ->
     {
       inorder,
       [
-        {timeout, 60, fun repo_data_test_1/0}
-        , {timeout, 60, fun pg_up_protocol:sign_aaa_test_1/0}
-        , {timeout, 60, fun sign_test_1/0}
-        , {timeout, 60, fun get_test_1/0}
-        , {timeout, 60, fun save_test_1/0}
+        {timeout, 120, fun repo_data_test_1/0}
+        , {timeout, 120, fun pg_up_protocol:sign_aaa_test_1/0}
+        , {timeout, 120, fun sign_test_1/0}
+        , {timeout, 120, fun get_test_1/0}
+        , {timeout, 120, fun save_test_1/0}
 %%      ,  fun verify_test_1/0
-        , {timeout, 60, fun public_key_test_1/0}
-        , {timeout, 60, fun pg_up_protocol_req_collect:mer_id_test_1/0}
-        , {timeout, 60, fun pg_up_protocol_req_collect:cert_id_test_1/0}
-        , {timeout, 60, fun pg_up_protocol_req_collect:customer_info_test_1/0}
+        , {timeout, 120, fun public_key_test_1/0}
+        , {timeout, 120, fun pg_up_protocol_req_collect:mer_id_test_1/0}
+        , {timeout, 120, fun pg_up_protocol_req_collect:cert_id_test_1/0}
+        , {timeout, 120, fun pg_up_protocol_req_collect:customer_info_test_1/0}
 %%        , fun mcht_req_test_1/0
-        , {timeout, 60, fun save_req_convert_test_1/0}
+        , {timeout, 120, fun save_req_convert_test_1/0}
 
-        , {timeout, 60, fun send_up_collect_test_1/0}
-        , {timeout, 60, fun send_up_collect_256_test_1/0}
+        , {timeout, 120, fun send_up_collect_test_1/0}
+        , {timeout, 120, fun send_up_collect_256_test_1/0}
 
-        , {timeout, 60, fun send_up_batch_collect_test_1/0}
+        , {timeout, 120, fun send_up_batch_collect_test_1/0}
 
-        , {timeout, 60, fun info_collect_test_1/0}
+        , {timeout, 120, fun info_collect_test_1/0}
 
       ]
     }
@@ -416,8 +416,8 @@ save_req_convert_test_1() ->
   %% convert to query
   PUpQuery = pg_convert:convert(pg_up_protocol_req_query, RepoUp),
   ?debugFmt("PUpQuery = ~ts", [pg_model:pr(pg_up_protocol_req_query, PUpQuery)]),
-  ?assertEqual([<<"777290058110097">>, <<"20171103211953426061082">>],
-    pg_model:get(pg_up_protocol_req_query, PUpQuery, [merId, orderId])),
+  ?assertEqual(pg_model:get(pg_up_protocol:repo_module(up_txn_log), RepoUp, [up_merId, up_txnTime, up_orderId]),
+    pg_model:get(pg_up_protocol_req_query, PUpQuery, [merId, txnTime, orderId])),
   ok.
 
 %%---------------------------------------------------
