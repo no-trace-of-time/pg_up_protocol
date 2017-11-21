@@ -96,6 +96,25 @@ options() ->
 
 convert_config() ->
   [
+    %% default, update up_txn_log, txn_status reservs as waiting
+    {default,
+      [
+        {to, proplists},
+        {from,
+          [
+            {?MODULE,
+              [
+                {up_index_key, pg_up_protocol, up_index_key}
+                , {up_respCode, respCode}
+                , {up_respMsg, respMsg}
+                , {up_queryId, queryId}
+              ]
+            }
+          ]
+        }
+
+      ]
+    },
     %% mcht_req_collect -> up_req_collect
     {save_resp,
       [
