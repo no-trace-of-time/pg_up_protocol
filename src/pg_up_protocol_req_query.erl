@@ -89,7 +89,7 @@ convert_config() ->
                 {version, {fun get_version/0, []}}
                 , {merId, up_merId}
                 , {certId, {fun cert_id/1, [up_merId]}}
-                , {txnTime, {fun now_txn/0, []}}
+                , {txnTime, up_txnTime}
                 , {orderId, up_orderId}
 
               ]
