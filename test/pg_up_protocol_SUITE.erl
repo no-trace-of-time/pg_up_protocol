@@ -378,7 +378,7 @@ mcht_req_test_1() ->
     pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
 
 
-%%    timer:sleep(1000),
+    timer:sleep(1000),
   ok.
 
 %%---------------------------------------------------
@@ -418,6 +418,21 @@ save_req_convert_test_1() ->
   ?debugFmt("PUpQuery = ~ts", [pg_model:pr(pg_up_protocol_req_query, PUpQuery)]),
   ?assertEqual(pg_model:get(pg_up_protocol:repo_module(up_txn_log), RepoUp, [up_merId, up_txnTime, up_orderId]),
     pg_model:get(pg_up_protocol_req_query, PUpQuery, [merId, txnTime, orderId])),
+
+  %% query resp convert
+  VL = pg_convert:convert(pg_up_protocol_resp_query,
+    pg_model:new(pg_up_protocol_resp_query,
+      [
+        {merId, <<"111">>}
+        , {txnTime, <<"20170101">>}
+        , {orderId, <<"201701012222">>}
+        , {origRespCode, <<"00">>}
+        , {origRespMsg, <<"succ">>}
+      ])),
+  ?assertEqual([{<<"111">>, <<"20170101">>, <<"201701012222">>}, <<"00">>, <<"succ">>, success]
+    , [proplists:get_value(Key, VL) ||
+      Key <- [up_index_key, up_respCode, up_respMsg, txn_status]]),
+
   ok.
 
 %%---------------------------------------------------
@@ -447,7 +462,7 @@ send_up_collect_test_1() ->
   ?assertEqual(<<"UTF-8">>, pg_model:get(MResp, ProtocolUpResp, encoding)),
   ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
-%%  timer:sleep(1000),
+  timer:sleep(1000),
 
   ok.
 
@@ -474,7 +489,7 @@ send_up_collect_256_test_1() ->
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
   ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
-%%  timer:sleep(1000),
+  timer:sleep(1000),
 
   ok.
 %%---------------------------------------------------
@@ -504,7 +519,7 @@ send_up_batch_collect_test_1() ->
 %%  ?assertEqual(<<"UTF-8">>, pg_model:get(MResp, ProtocolUpResp, encoding)),
 %%  ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
-%%  timer:sleep(1000),
+  timer:sleep(1000),
 
   ok.
 %%---------------------------------------------------
