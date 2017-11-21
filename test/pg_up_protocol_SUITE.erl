@@ -122,25 +122,25 @@ my_test_() ->
     {
       inorder,
       [
-        fun repo_data_test_1/0
-        , fun pg_up_protocol:sign_aaa_test_1/0
-        , fun sign_test_1/0
-        , fun get_test_1/0
-        , fun save_test_1/0
+        {timeout, 60, fun repo_data_test_1/0}
+        , {timeout, 60, fun pg_up_protocol:sign_aaa_test_1/0}
+        , {timeout, 60, fun sign_test_1/0}
+        , {timeout, 60, fun get_test_1/0}
+        , {timeout, 60, fun save_test_1/0}
 %%      ,  fun verify_test_1/0
-        , fun public_key_test_1/0
-        , fun pg_up_protocol_req_collect:mer_id_test_1/0
-        , fun pg_up_protocol_req_collect:cert_id_test_1/0
-        , fun pg_up_protocol_req_collect:customer_info_test_1/0
+        , {timeout, 60, fun public_key_test_1/0}
+        , {timeout, 60, fun pg_up_protocol_req_collect:mer_id_test_1/0}
+        , {timeout, 60, fun pg_up_protocol_req_collect:cert_id_test_1/0}
+        , {timeout, 60, fun pg_up_protocol_req_collect:customer_info_test_1/0}
 %%        , fun mcht_req_test_1/0
-        , fun save_req_convert_test_1/0
+        , {timeout, 60, fun save_req_convert_test_1/0}
 
-        , fun send_up_collect_test_1/0
-        , fun send_up_collect_256_test_1/0
+        , {timeout, 60, fun send_up_collect_test_1/0}
+        , {timeout, 60, fun send_up_collect_256_test_1/0}
 
-        , fun send_up_batch_collect_test_1/0
+        , {timeout, 60, fun send_up_batch_collect_test_1/0}
 
-        , fun info_collect_test_1/0
+        , {timeout, 60, fun info_collect_test_1/0}
 
       ]
     }
