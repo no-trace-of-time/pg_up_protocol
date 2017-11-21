@@ -447,7 +447,7 @@ send_up_collect_test_1() ->
   ?assertEqual(<<"UTF-8">>, pg_model:get(MResp, ProtocolUpResp, encoding)),
   ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
-  timer:sleep(1000),
+%%  timer:sleep(1000),
 
   ok.
 
@@ -474,7 +474,7 @@ send_up_collect_256_test_1() ->
   ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
   ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
-  timer:sleep(1000),
+%%  timer:sleep(1000),
 
   ok.
 %%---------------------------------------------------
@@ -504,7 +504,7 @@ send_up_batch_collect_test_1() ->
 %%  ?assertEqual(<<"UTF-8">>, pg_model:get(MResp, ProtocolUpResp, encoding)),
 %%  ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
 
-  timer:sleep(1000),
+%%  timer:sleep(1000),
 
   ok.
 %%---------------------------------------------------
