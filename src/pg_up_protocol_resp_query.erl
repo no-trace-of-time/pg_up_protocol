@@ -25,6 +25,7 @@
 -export([
   sign_fields/0
   , options/0
+  , convert_config/0
 ]).
 
 %%-------------------------------------------------------------------
@@ -110,3 +111,25 @@ options() ->
   #{
     direction => req
   }.
+convert_config() ->
+  [
+    %% up_req_resp -> up_txn_log
+    {default,
+      [
+        {to, proplists},
+        {from,
+          [
+            {?MODULE,
+              [
+                {up_index_key, pg_up_protocol, up_index_key}
+                , {up_respCode, origRespCode}
+                , {up_respMsg, origRespMsg}
+                , {txn_status, {fun xfutils:up_resp_code_2_txn_status/1, [origRespCode]}}
+
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ].
