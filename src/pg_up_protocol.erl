@@ -46,9 +46,10 @@
 %% API functions
 %%====================================================================
 pr_formatter(Field)
-  when (Field =:= resp_msg)
+  when (Field =:= respMsg)
   or (Field =:= reserved)
   or (Field =:= reqReserved)
+  or (Field =:= origRespMsg)
   ->
   string;
 pr_formatter(_) ->
