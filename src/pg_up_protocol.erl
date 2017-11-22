@@ -29,7 +29,7 @@
   , verify/2
   , sign_string/2
   , sign/2
-  , sign/4
+%%  , sign/4
   , validate_format/1
   , save/2
   , repo_module/1
@@ -205,15 +205,17 @@ verify(M, P) when is_atom(M), is_tuple(P) ->
   end.
 
 %%------------------------------------------------
--spec sign(M, P) -> Sig when
+-spec sign(M, P) -> {SignString, Sig} when
   M :: atom(),
   P :: pg_model:pg_model(),
+  SignString :: binary(),
   Sig :: binary() | iolist().
 
 sign(M, P) when is_atom(M), is_tuple(P) ->
   SignString = sign_string(M, P),
   [Version, MerId] = pg_model:get(M, P, [version, merId]),
-  sign(M, SignString, Version, MerId).
+  Sig = sign(M, SignString, Version, MerId),
+  {SignString, Sig}.
 %%------------------------------------------------
 -spec sign(M, SignString, Version, MerId) -> Sig when
   M :: atom(),

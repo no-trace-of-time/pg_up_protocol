@@ -301,7 +301,7 @@ sign_test_1() ->
   "&reserved={cardNumberLock=1}&signMethod=01&termId=12345678&txnAmt=100&txnSubType=01"
   "&txnTime=20171020143600&txnType=01&version=5.0.0"/utf8>>,
     pg_up_protocol:sign_string(?M_P_REQ, P_REQ)),
-  ?assertEqual(pg_model:get(?M_P_REQ, P_REQ, signature), pg_up_protocol:sign(?M_P_REQ, P_REQ)),
+  ?assertEqual(pg_model:get(?M_P_REQ, P_REQ, signature), element(2, pg_up_protocol:sign(?M_P_REQ, P_REQ))),
 
 
   ok.
@@ -378,7 +378,7 @@ mcht_req_test_1() ->
     pg_model:get(MRepo, Repo, [mcht_index_key, txn_type, txn_status, up_merId])),
 
 
-    timer:sleep(1000),
+  timer:sleep(1000),
   ok.
 
 %%---------------------------------------------------
@@ -439,7 +439,7 @@ save_req_convert_test_1() ->
 send_up_collect_test_1() ->
   PMchtReq = protocol(mcht_req),
   PUpReq = pg_convert:convert(pg_up_protocol_req_collect, PMchtReq),
-  Sig = pg_up_protocol:sign(pg_up_protocol_req_collect, PUpReq),
+  {_, Sig} = pg_up_protocol:sign(pg_up_protocol_req_collect, PUpReq),
   PUpReqWithSig = pg_model:set(pg_up_protocol_req_collect, PUpReq, signature, Sig),
   ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
 
@@ -473,7 +473,7 @@ send_up_collect_256_test_1() ->
   ?debugFmt("PMchtReq = ~p", [PMchtReq]),
   PUpReq = pg_model:set(pg_up_protocol_req_collect,
     pg_convert:convert(pg_up_protocol_req_collect, PMchtReq), version, <<"5.1.0">>),
-  Sig = pg_up_protocol:sign(pg_up_protocol_req_collect, PUpReq),
+  {_, Sig} = pg_up_protocol:sign(pg_up_protocol_req_collect, PUpReq),
   PUpReqWithSig = pg_model:set(pg_up_protocol_req_collect, PUpReq, signature, Sig),
   ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
 
@@ -496,7 +496,7 @@ send_up_collect_256_test_1() ->
 send_up_batch_collect_test_1() ->
   PMchtReq = protocol(mcht_req_batch_collect),
   PUpReq = pg_convert:convert(pg_up_protocol_req_batch_collect, PMchtReq),
-  Sig = pg_up_protocol:sign(pg_up_protocol_req_batch_collect, PUpReq),
+  {_, Sig} = pg_up_protocol:sign(pg_up_protocol_req_batch_collect, PUpReq),
   PUpReqWithSig = pg_model:set(pg_up_protocol_req_batch_collect, PUpReq, signature, Sig),
   ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
 
