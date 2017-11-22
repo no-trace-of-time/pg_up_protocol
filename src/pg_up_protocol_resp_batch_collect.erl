@@ -90,6 +90,7 @@ sign_fields() ->
 
 options() ->
   #{
+    channel_type => up,
     direction => resp
   }.
 
