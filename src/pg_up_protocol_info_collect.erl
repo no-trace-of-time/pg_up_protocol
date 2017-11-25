@@ -111,6 +111,7 @@ sign_fields() ->
 options() ->
   #{
     channel_type => up,
+    txn_type=>collect,
     direction => resp
   }.
 

@@ -110,6 +110,7 @@ sign_fields() ->
 options() ->
   #{
     channel_type => up,
+    txn_type => query,
     direction => req
   }.
 convert_config() ->

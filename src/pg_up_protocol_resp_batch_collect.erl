@@ -91,6 +91,7 @@ sign_fields() ->
 options() ->
   #{
     channel_type => up,
+    txn_type => batch_collect,
     direction => resp
   }.
 
