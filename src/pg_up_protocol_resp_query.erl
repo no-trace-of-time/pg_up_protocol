@@ -124,9 +124,9 @@ convert_config() ->
             {?MODULE,
               [
                 {up_index_key, pg_up_protocol, up_index_key}
-                , {up_respCode, origRespCode}
-                , {up_respMsg, origRespMsg}
-                , {txn_status, {fun xfutils:up_resp_code_2_txn_status/1, [origRespCode]}}
+                , {up_respCode, {fun resp_info/2, [respCode, origRespCode]}}
+                , {up_respMsg, {fun resp_info/2, [respMsg, origRespMsg]}}
+                , {txn_status, {fun txn_status/2, [respCode, origRespCode]}}
 
               ]
             }
@@ -135,3 +135,15 @@ convert_config() ->
       ]
     }
   ].
+
+resp_info(RespInfo, undefined) ->
+  RespInfo;
+resp_info(_RespInfo, OrigRespInfo) ->
+  OrigRespInfo.
+
+
+txn_status(RespCode, undefined) ->
+  xfutils:up_resp_code_2_txn_status(RespCode);
+txn_status(_RespCode, OrigRespCode) ->
+  xfutils:up_resp_code_2_txn_status(OrigRespCode).
+
