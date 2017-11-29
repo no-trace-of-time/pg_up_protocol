@@ -39,6 +39,7 @@
   , respMsg = <<"交易成功"/utf8>>
   , fileName = <<>>
   , fileContent = <<>>
+  , signature = <<>>
 }).
 -type ?TXN() :: #?TXN{}.
 %%-opaque ?TXN() :: #?TXN{}.

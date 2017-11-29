@@ -165,6 +165,7 @@ in_2_out_map() ->
     , totalAmt => {<<"totalAmt">>, integer}
     , fileContent => <<"fileContent">>
     , fileType => <<"fileType">>
+    , fileName => <<"fileName">>
   }.
 
 %%------------------------------------------------------

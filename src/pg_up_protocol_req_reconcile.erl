@@ -94,6 +94,12 @@ sign_test() ->
   Sign_string = pg_up_protocol:sign_string(?MODULE, P),
   Sign_string = <<"accessType=0&bizType=000000&certId=70481187397&encoding=UTF-8&fileType=00&merId=898319849000018&settleDate=1127&signMethod=01&txnSubType=01&txnTime=20171128165458&txnType=76&version=5.0.0">>,
 %%  pg_model:get(?MODULE, P, signature) =:=
-    pg_up_protocol:sign(?MODULE, P)
+    pg_up_protocol:sign(?MODULE, P),
+  Params = {pg_up_protocol_req_reconcile,<<"5.0.0">>,<<"UTF-8">>,<<"9">>,<<"XSbkIzEF7Ti8h/oLJIPG4z3Ff4b4VLWzoBSSG1F9NMV2zx/lDxZah7cuqB1SHagoREddjFduiHJ+/bui2Xo1iJJ46wLtbsgHtgwtzeXZpc+/1l4BI6LflaLWjDMES+gSGcmMKlT4XZSnd45wHt+eG/fj0ZNUDXBZp+zn2dCyH5IKgUPSbFxQV/hN2fUDn3hm3JgL8gEhn8Z4+OGkhO/gcmMkdcOgZOlMJQPO8w5qs2upy78V0qyTxmgaCSinM4IXJfoJxTZzGYvLcdMaWuhTL1YRoN57KCYmANudG81pSUSQMmwUXrihfK/bfsO5x1e4J9eQUMv8v6NG9WodVzvaOw==">>,<<"01">>,<<"76">>,<<"01">>,<<"000000">>,<<"0">>,<<"898319849000018">>,<<"1127">>,<<"20171129174037">>,<<"00">>},
+
+  pg_up_protocol:in_2_out(?MODULE, Params, post)
+
+
+
 .
 
