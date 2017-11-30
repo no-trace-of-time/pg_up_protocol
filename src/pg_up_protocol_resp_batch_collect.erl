@@ -11,7 +11,6 @@
 -include_lib("mixer/include/mixer.hrl").
 -compile({parse_trans, exprecs}).
 -author("simon").
--behaviour(pg_model).
 -behavior(pg_protocol).
 -behaviour(pg_up_protocol).
 

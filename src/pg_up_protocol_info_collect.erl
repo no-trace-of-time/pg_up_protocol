@@ -12,7 +12,6 @@
 -compile({parse_trans, exprecs}).
 %%-compile({parse_trans, ct_expand}).
 -author("simon").
--behaviour(pg_model).
 -behavior(pg_protocol).
 -behaviour(pg_up_protocol).
 
