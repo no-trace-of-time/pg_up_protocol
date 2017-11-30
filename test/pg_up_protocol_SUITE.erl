@@ -141,6 +141,7 @@ my_test_() ->
         , {timeout, 120, fun send_up_batch_collect_test_1/0}
 
         , {timeout, 120, fun info_collect_test_1/0}
+        , {timeout, 120, fun up_reconcile_test_1/0}
 
       ]
     }
@@ -554,5 +555,33 @@ info_collect_test_1() ->
           up_settleDate, up_queryId, up_traceNo, up_traceTime]]
   ),
 
+  ok.
+
+up_reconcile_test_1()->
+  TxnTime = list_to_binary(xfutils:now(txn)),
+  CertId = up_config:get_mer_prop(<<"898350249000240">>, certId),
+  List = [
+    {merId,<<"898319849000018">>}
+    ,{settleDate,<<"1127">>}
+    ,{txnTime,TxnTime}
+    ,{certId,CertId}
+  ]
+  ,
+  ProtocolRepo = pg_model:new(pg_up_protocol_req_reconcile,List),
+  {_, Sig} = pg_up_protocol:sign(pg_up_protocol_req_reconcile, ProtocolRepo),
+  PUpReqWithSig = pg_model:set(pg_up_protocol_req_reconcile, ProtocolRepo, signature, Sig),
+  ?debugFmt("PUpReqWithSig = ~p", [PUpReqWithSig]),
+
+  PostBody = pg_up_protocol:in_2_out(pg_up_protocol_req_reconcile, PUpReqWithSig, post),
+  Url = up_config:get_config(up_file_url),
+
+  ?debugFmt("PostString = ~ts,Url = ~p", [PostBody, Url]),
+
+  {ok, {Status, Headers, Body}} = httpc:request(post,
+    {binary_to_list(Url), [], "application/x-www-form-urlencoded", iolist_to_binary(PostBody)},
+    [], [{body_format, binary}]),
+  ?debugFmt("http Statue = ~p~nHeaders  = ~p~nBody=~ts~n", [Status, Headers, Body]),
+  ?assertNotEqual(nomatch, binary:match(Body, <<"respCode=00">>)),
+  timer:sleep(1000),
   ok.
 

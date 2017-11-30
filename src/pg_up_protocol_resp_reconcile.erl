@@ -24,22 +24,23 @@
 -export([sign_fields/0, options/0, convert_config/0]).
 -define(TXN, ?MODULE).
 -record(?TXN, {
-  accessType = <<"0">>
-  , bizType = <<"000000">>
-  , encoding = <<"UTF-8">>
-  , fileType = <<"00">>
-  , merId = <<"012345678901234">>
-  , settleDate = <<"1127">>
-  , signMethod = <<"01">>
-  , txnSubType = <<"01">>
-  , txnTime = <<"19991212121212">>
-  , txnType = <<"76">>
-  , version = <<"5.0.0">>
-  , respCode = <<"00">>
-  , respMsg = <<"交易成功"/utf8>>
+  accessType = <<"0">> :: pg_up_protocol:up_version()
+  , bizType = <<"000000">> :: pg_up_protocol:up_bizType()
+  , encoding = <<"UTF-8">> :: pg_up_protocol:up_encoding()
+  , fileType = <<"00">> :: pg_up_protocol:file_transfer_type()
+  , merId = <<"012345678901234">> :: pg_up_protocol:up_merId()
+  , settleDate = <<"1127">> :: pg_up_protocol:up_signature()
+  , signMethod = <<"01">> :: pg_up_protocol:up_signMethod()
+  , txnSubType = <<"01">> :: pg_up_protocol:up_txnSubType()
+  , txnTime = <<"19991212121212">> :: pg_up_protocol:up_txnTime()
+  , txnType = <<"76">> :: pg_up_protocol:up_txnType()
+  , version = <<"5.0.0">> :: pg_up_protocol:up_version()
+  , respCode = <<"00">> :: pg_up_protocol:up_respCode()
+  , respMsg = <<"交易成功"/utf8>> :: pg_up_protocol:up_respMsg()
   , fileName = <<>>
   , fileContent = <<>>
-  , signature = <<>>
+  , certId = <<"9">> :: pg_up_protocol:up_certId()
+  , signature = <<>> :: pg_up_protocol:up_signature()
 }).
 -type ?TXN() :: #?TXN{}.
 %%-opaque ?TXN() :: #?TXN{}.
